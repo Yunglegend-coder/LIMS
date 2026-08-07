@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="row">
+
+    <div class="col-lg-3 col-6">
+        <div class="small-box text-bg-primary">
+            <div class="inner">
+                <h3>{{ customer_count }}</h3>
+                <p>Customers</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-6">
+        <div class="small-box text-bg-success">
+            <div class="inner">
+                <h3>{{ farm_count }}</h3>
+                <p>Farms</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-6">
+        <div class="small-box text-bg-warning">
+            <div class="inner">
+                <h3>{{ house_count }}</h3>
+                <p>Houses</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-6">
+        <div class="small-box text-bg-danger">
+            <div class="inner">
+                <h3>{{ sample_count }}</h3>
+                <p>Samples</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="card">
+
+    <div class="card-header">
+        <h3 class="card-title">
+            Recent Samples
+        </h3>
+    </div>
+
+    <div class="card-body">
+
+        <table class="table table-striped">
+
+            <thead>
+
+                <tr>
+                    <th>Case Code</th>
+                    <th>Farm</th>
+                    <th>Sample Type</th>
+                    <th>Status</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+            {% for sample in recent_samples %}
+
+                <tr>
+
+                    <td>{{ sample.case_code }}</td>
+
+                    <td>{{ sample.farm }}</td>
+
+                    <td>{{ sample.get_sample_type_display }}</td>
+
+                    <td>{{ sample.get_status_display }}</td>
+
+                </tr>
+
+            {% empty %}
+
+                <tr>
+                    <td colspan="4">
+                        No samples registered yet.
+                    </td>
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

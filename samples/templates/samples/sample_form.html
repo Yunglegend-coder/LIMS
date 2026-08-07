@@ -1,0 +1,509 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Register Sample
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+<!-- Page Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+
+    <div>
+        <h2 class="fw-bold mb-1">
+            Register Sample
+        </h2>
+
+        <p class="text-muted mb-0">
+            Enter the details required to register a laboratory sample.
+        </p>
+    </div>
+
+    <div class="mt-3 mt-md-0">
+
+        <a href="{% url 'sample_list' %}"
+           class="btn btn-outline-secondary">
+
+            <i class="fas fa-arrow-left me-1"></i>
+            Back to Samples
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- Form Errors -->
+{% if form.non_field_errors %}
+
+    <div class="alert alert-danger">
+
+        <div class="fw-bold mb-1">
+            Unable to register sample
+        </div>
+
+        {{ form.non_field_errors }}
+
+    </div>
+
+{% endif %}
+
+
+<form method="post">
+
+    {% csrf_token %}
+
+
+    <!-- Sample Information -->
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-bottom">
+
+            <div class="d-flex align-items-center">
+
+                <div class="me-3 text-primary">
+                    <i class="fas fa-vial fa-lg"></i>
+                </div>
+
+                <div>
+
+                    <h5 class="fw-bold mb-0">
+                        Sample Information
+                    </h5>
+
+                    <small class="text-muted">
+                        Basic information about the submitted sample.
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <div class="row g-3">
+
+
+                <!-- Farm -->
+                <div class="col-md-6">
+
+                    <label for="{{ form.farm.id_for_label }}"
+                           class="form-label fw-semibold">
+
+                        {{ form.farm.label }}
+
+                    </label>
+
+                    {{ form.farm }}
+
+                    {% if form.farm.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.farm.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <!-- House -->
+                <div class="col-md-6">
+
+                    <label for="{{ form.house.id_for_label }}"
+                           class="form-label fw-semibold">
+
+                        {{ form.house.label }}
+
+                    </label>
+
+                    {{ form.house }}
+
+                    {% if form.house.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.house.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Site -->
+                <div class="col-md-6">
+
+                    <label for="{{ form.site.id_for_label }}"
+                           class="form-label fw-semibold">
+
+                        {{ form.site.label }}
+
+                    </label>
+
+                    {{ form.site }}
+
+                    {% if form.site.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.site.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Sample Type -->
+                <div class="col-md-6">
+
+                    <label for="{{ form.sample_type.id_for_label }}"
+                           class="form-label fw-semibold">
+
+                        {{ form.sample_type.label }}
+
+                    </label>
+
+                    {{ form.sample_type }}
+
+                    {% if form.sample_type.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.sample_type.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Condition -->
+                <div class="col-md-6">
+
+                    <label for="{{ form.condition.id_for_label }}"
+                           class="form-label fw-semibold">
+
+                        {{ form.condition.label }}
+
+                    </label>
+
+                    {{ form.condition }}
+
+                    {% if form.condition.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.condition.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Priority -->
+                <div class="col-md-6">
+
+                    <label for="{{ form.priority.id_for_label }}"
+                           class="form-label fw-semibold">
+
+                        {{ form.priority.label }}
+
+                    </label>
+
+                    {{ form.priority }}
+
+                    {% if form.priority.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.priority.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Collection Date -->
+                <div class="col-md-6">
+
+                    <label for="{{ form.collection_date.id_for_label }}"
+                           class="form-label fw-semibold">
+
+                        {{ form.collection_date.label }}
+
+                    </label>
+
+                    {{ form.collection_date }}
+
+                    {% if form.collection_date.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.collection_date.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Clinical / Sample History -->
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-bottom">
+
+            <div class="d-flex align-items-center">
+
+                <div class="me-3 text-primary">
+                    <i class="fas fa-notes-medical fa-lg"></i>
+                </div>
+
+                <div>
+
+                    <h5 class="fw-bold mb-0">
+                        Clinical & Sample History
+                    </h5>
+
+                    <small class="text-muted">
+                        Provide relevant background information for the sample.
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body">
+
+
+            <!-- History -->
+            <div id="history-wrapper" class="mb-3">
+
+                <label for="{{ form.history.id_for_label }}"
+                       class="form-label fw-semibold">
+
+                    {{ form.history.label }}
+
+                </label>
+
+                {{ form.history }}
+
+                {% if form.history.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ form.history.errors }}
+                    </div>
+                {% endif %}
+
+            </div>
+
+
+            <!-- Source of Birds -->
+            <div id="source_of_birds-wrapper" class="mb-3">
+
+                <label for="{{ form.source_of_birds.id_for_label }}"
+                       class="form-label fw-semibold">
+
+                    {{ form.source_of_birds.label }}
+
+                </label>
+
+                {{ form.source_of_birds }}
+
+                {% if form.source_of_birds.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ form.source_of_birds.errors }}
+                    </div>
+                {% endif %}
+
+            </div>
+
+
+            <!-- Source of Water -->
+            <div id="source_of_water-wrapper" class="mb-3">
+
+                <label for="{{ form.source_of_water.id_for_label }}"
+                       class="form-label fw-semibold">
+
+                    {{ form.source_of_water.label }}
+
+                </label>
+
+                {{ form.source_of_water }}
+
+                {% if form.source_of_water.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ form.source_of_water.errors }}
+                    </div>
+                {% endif %}
+
+            </div>
+
+
+            <!-- Feed Type -->
+            <div id="feed_type-wrapper" class="mb-3">
+
+                <label for="{{ form.feed_type.id_for_label }}"
+                       class="form-label fw-semibold">
+
+                    {{ form.feed_type.label }}
+
+                </label>
+
+                {{ form.feed_type }}
+
+                {% if form.feed_type.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ form.feed_type.errors }}
+                    </div>
+                {% endif %}
+
+            </div>
+
+
+            <!-- Last Vaccination -->
+            <div id="last_vaccination-wrapper" class="mb-3">
+
+                <label for="{{ form.last_vaccination.id_for_label }}"
+                       class="form-label fw-semibold">
+
+                    {{ form.last_vaccination.label }}
+
+                </label>
+
+                {{ form.last_vaccination }}
+
+                {% if form.last_vaccination.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ form.last_vaccination.errors }}
+                    </div>
+                {% endif %}
+
+            </div>
+
+
+            <!-- Antibiotics -->
+            <div id="antibiotics_used-wrapper" class="mb-3">
+
+                <label for="{{ form.antibiotics_used.id_for_label }}"
+                       class="form-label fw-semibold">
+
+                    {{ form.antibiotics_used.label }}
+
+                </label>
+
+                {{ form.antibiotics_used }}
+
+                {% if form.antibiotics_used.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ form.antibiotics_used.errors }}
+                    </div>
+                {% endif %}
+
+            </div>
+
+
+            <!-- Mortality Pattern -->
+            <div id="mortality_pattern-wrapper" class="mb-3">
+
+                <label for="{{ form.mortality_pattern.id_for_label }}"
+                       class="form-label fw-semibold">
+
+                    {{ form.mortality_pattern.label }}
+
+                </label>
+
+                {{ form.mortality_pattern }}
+
+                {% if form.mortality_pattern.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ form.mortality_pattern.errors }}
+                    </div>
+                {% endif %}
+
+            </div>
+
+
+            <!-- Pathology -->
+            <div id="pathology-wrapper" class="mb-3">
+
+                <label for="{{ form.pathology.id_for_label }}"
+                       class="form-label fw-semibold">
+
+                    {{ form.pathology.label }}
+
+                </label>
+
+                {{ form.pathology }}
+
+                {% if form.pathology.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ form.pathology.errors }}
+                    </div>
+                {% endif %}
+
+            </div>
+
+
+            <!-- Remarks -->
+            <div id="remarks-wrapper" class="mb-0">
+
+                <label for="{{ form.remarks.id_for_label }}"
+                       class="form-label fw-semibold">
+
+                    {{ form.remarks.label }}
+
+                </label>
+
+                {{ form.remarks }}
+
+                {% if form.remarks.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ form.remarks.errors }}
+                    </div>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Form Actions -->
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="d-flex justify-content-end gap-2">
+
+                <a href="{% url 'sample_list' %}"
+                   class="btn btn-outline-secondary">
+
+                    <i class="fas fa-times me-1"></i>
+                    Cancel
+
+                </a>
+
+                <button type="submit"
+                        class="btn btn-primary">
+
+                    <i class="fas fa-save me-1"></i>
+                    Register Sample
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</form>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/sample_admin.js' %}"></script>
+<script src="{% static 'js/sample_visibility.js' %}"></script>
+{% endblock %}

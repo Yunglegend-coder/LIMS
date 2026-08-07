@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}
+Customer Details
+{% endblock %}
+
+{% block content %}
+
+<div class="app-content">
+
+<div class="container-fluid">
+
+<div class="card">
+
+<div class="card-header">
+
+<h3>
+
+Customer Information
+
+</h3>
+
+</div>
+
+<div class="card-body">
+
+<table class="table">
+
+<tr>
+
+<th>Name</th>
+
+<td>{{ customer.name }}</td>
+
+</tr>
+
+<tr>
+
+<th>Farm</th>
+
+<td>{{ customer.farm_name }}</td>
+
+</tr>
+
+<tr>
+
+<th>Email</th>
+
+<td>{{ customer.email }}</td>
+
+</tr>
+
+<tr>
+
+<th>Phone</th>
+
+<td>{{ customer.whatsapp }}</td>
+
+</tr>
+
+<tr>
+
+<th>State</th>
+
+<td>{{ customer.state }}</td>
+
+</tr>
+
+<tr>
+
+<th>Address</th>
+
+<td>{{ customer.address }}</td>
+
+</tr>
+
+</table>
+
+<a
+href="{% url 'customer_update' customer.pk %}"
+class="btn btn-warning">
+
+Edit
+
+</a>
+
+<a
+href="{% url 'customer_list' %}"
+class="btn btn-secondary">
+
+Back
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

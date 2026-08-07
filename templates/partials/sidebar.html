@@ -1,0 +1,85 @@
+<aside class="app-sidebar bg-dark shadow"
+       data-bs-theme="dark">
+
+<!-- Brand -->
+<div class="sidebar-brand">
+
+    <a href="{% url 'dashboard' %}"
+       class="brand-link text-decoration-none">
+
+        <span class="brand-text fw-bold">
+            Poultry LIMS
+        </span>
+
+    </a>
+
+</div>
+
+
+<!-- Sidebar -->
+<div class="sidebar-wrapper">
+
+    <nav class="mt-2">
+
+        <ul class="nav sidebar-menu flex-column"
+            data-lte-toggle="treeview"
+            role="menu">
+
+
+            <!-- Dashboard -->
+            <li class="nav-item">
+
+                <a href="{% url 'dashboard' %}"
+                   class="nav-link">
+
+                    <i class="nav-icon fas fa-tachometer-alt"></i>
+
+                    <p>
+                        Dashboard
+                    </p>
+
+                </a>
+
+            </li>
+
+
+            <!-- Samples -->
+            <li class="nav-item">
+
+                <a href="{% url 'sample_list' %}"
+                   class="nav-link">
+
+                    <i class="nav-icon fas fa-vial"></i>
+
+                    <p>
+                        Samples
+                    </p>
+
+                </a>
+
+            </li>
+
+
+            <!-- Customers -->
+            <li class="nav-item">
+
+                <a href="{% url 'customer_list' %}"
+                   class="nav-link">
+
+                    <i class="nav-icon fas fa-users"></i>
+
+                    <p>
+                        Customers
+                    </p>
+
+                </a>
+
+            </li>
+
+        </ul>
+
+    </nav>
+
+</div>
+
+</aside>

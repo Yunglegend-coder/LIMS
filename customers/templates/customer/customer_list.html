@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}
+Customers
+{% endblock %}
+
+{% block content %}
+
+<div class="app-content">
+    <div class="container-fluid">
+
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h3 class="mb-0">Customers</h3>
+                <small class="text-muted">
+                    Registered customers and farms
+                </small>
+            </div>
+
+            <a href="{% url 'customer_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i>
+                Add Customer
+            </a>
+        </div>
+
+        <!-- Search Card -->
+        <div class="card mb-3">
+            <div class="card-body">
+
+                <form method="get">
+
+                    <div class="row">
+
+                        <div class="col-md-10">
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                name="search"
+                                placeholder="Search by customer name, farm, email or phone..."
+                                value="{{ request.GET.search }}">
+
+                        </div>
+
+                        <div class="col-md-2 d-grid">
+
+                            <button class="btn btn-outline-primary">
+                                Search
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+        <!-- Customer Table -->
+        <div class="card">
+
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    Customer List
+                </h5>
+            </div>
+
+            <div class="card-body table-responsive">
+
+                <table class="table table-bordered table-hover align-middle">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th>#</th>
+
+                            <th>Name</th>
+
+                            <th>Farms</th>
+
+                            <th>Email</th>
+
+                            <th>Phone</th>
+
+                            <th>State</th>
+
+                            <th width="220">Actions</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for customer in customers %}
+
+                        <tr>
+
+                            <td>
+                                {% widthratio forloop.counter0 1 1 as row %}
+                                {{ page_obj.start_index|add:row|add:"-1" }}
+                            </td>
+
+                            <td>{{ customer.name }}</td>
+
+                            <td>
+                                {% for farm in customer.farms.all %}
+                                    {{ farm.name }}{% if not forloop.last %}, {% endif %}
+                                {% empty %}
+                                    -
+                                {% endfor %}
+                            </td>
+
+                            <td>{{ customer.email|default:"-" }}</td>
+
+                            <td>{{ customer.whatsapp }}</td>
+
+                            <td>{{ customer.state}}</td>
+
+                            <td>
+
+                                <a href="{% url 'customer_detail' customer.pk %}"
+                                   class="btn btn-sm btn-info">
+
+                                    View
+
+                                </a>
+
+                                <a href="{% url 'customer_update' customer.pk %}"
+                                   class="btn btn-sm btn-warning">
+
+                                    Edit
+
+                                </a>
+
+                                <a href="{% url 'customer_delete' customer.pk %}"
+                                   class="btn btn-sm btn-danger">
+
+                                    Delete
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+
+                            <td colspan="7" class="text-center text-muted py-4">
+
+                                No customers found.
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% if is_paginated %}
+
+            <div class="card-footer">
+
+                <nav>
+
+                    <ul class="pagination justify-content-center mb-0">
+
+                        {% if page_obj.has_previous %}
+
+                        <li class="page-item">
+
+                            <a class="page-link"
+                               href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+
+                                Previous
+
+                            </a>
+
+                        </li>
+
+                        {% endif %}
+
+                        <li class="page-item active">
+
+                            <span class="page-link">
+
+                                {{ page_obj.number }}
+
+                                of
+
+                                {{ page_obj.paginator.num_pages }}
+
+                            </span>
+
+                        </li>
+
+                        {% if page_obj.has_next %}
+
+                        <li class="page-item">
+
+                            <a class="page-link"
+                               href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+
+                                Next
+
+                            </a>
+
+                        </li>
+
+                        {% endif %}
+
+                    </ul>
+
+                </nav>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
