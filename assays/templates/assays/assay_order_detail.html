@@ -1,0 +1,1118 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ order.assay.name }} — {{ order.sample.case_code }}
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- ========================================================= -->
+    <!-- PAGE HEADER -->
+    <!-- ========================================================= -->
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+
+        <div>
+            <h2 class="fw-bold mb-1">
+                {{ order.assay.name }}
+            </h2>
+
+            <p class="text-muted mb-0">
+                Laboratory assay work order
+            </p>
+        </div>
+
+        <div class="mt-3 mt-md-0">
+
+            <a href="{% url 'sample_detail' order.sample.pk %}"
+               class="btn btn-outline-secondary">
+
+                <i class="fas fa-arrow-left me-1"></i>
+                Back to Sample
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- WORK ORDER INFORMATION -->
+    <!-- ========================================================= -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-bottom">
+
+            <h5 class="fw-bold mb-0">
+                Work Order
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row g-4">
+
+                <!-- Case Code -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Case Code
+                    </small>
+
+                    <strong class="text-primary fs-5">
+                        {{ order.sample.case_code }}
+                    </strong>
+
+                </div>
+
+
+                <!-- Sample Type -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Sample Type
+                    </small>
+
+                    <strong>
+                        {{ order.sample.get_sample_type_display }}
+                    </strong>
+
+                </div>
+
+
+                <!-- Assay -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Assay
+                    </small>
+
+                    <strong>
+                        {{ order.assay.name }}
+                    </strong>
+
+                </div>
+
+
+                <!-- Laboratory -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Laboratory
+                    </small>
+
+                    <span class="badge text-bg-info">
+                        {{ order.assay.get_laboratory_section_display }}
+                    </span>
+
+                </div>
+
+
+                <!-- Category -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Category
+                    </small>
+
+                    <span class="badge text-bg-light border">
+                        {{ order.assay.get_category_display }}
+                    </span>
+
+                </div>
+
+
+                <!-- Status -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Status
+                    </small>
+
+                    {% if order.status == "PENDING" %}
+
+                        <span class="badge text-bg-warning">
+                            Pending
+                        </span>
+
+                    {% elif order.status == "IN_PROGRESS" %}
+
+                        <span class="badge text-bg-info">
+                            In Progress
+                        </span>
+
+                    {% elif order.status == "COMPLETED" %}
+
+                        <span class="badge text-bg-success">
+                            Completed
+                        </span>
+
+                    {% elif order.status == "VERIFIED" %}
+
+                        <span class="badge text-bg-primary">
+                            Verified
+                        </span>
+
+                    {% elif order.status == "CANCELLED" %}
+
+                        <span class="badge text-bg-danger">
+                            Cancelled
+                        </span>
+
+                    {% else %}
+
+                        <span class="badge text-bg-secondary">
+                            {{ order.get_status_display }}
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- SAMPLE INFORMATION -->
+    <!-- ========================================================= -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-bottom">
+
+            <h5 class="fw-bold mb-0">
+                Sample Information
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row g-4">
+
+                <!-- Customer -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Customer
+                    </small>
+
+                    {% if order.sample.farm and order.sample.farm.customer %}
+
+                        <strong>
+                            {{ order.sample.farm.customer.name }}
+                        </strong>
+
+                    {% else %}
+
+                        <span class="text-muted">
+                            —
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Farm -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Farm
+                    </small>
+
+                    {% if order.sample.farm %}
+
+                        <strong>
+                            {{ order.sample.farm.name }}
+                        </strong>
+
+                    {% else %}
+
+                        <span class="text-muted">
+                            —
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- House -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        House
+                    </small>
+
+                    {% if order.sample.house %}
+
+                        <strong>
+                            {{ order.sample.house.name }}
+                        </strong>
+
+                    {% else %}
+
+                        <span class="text-muted">
+                            —
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- ASSAY INFORMATION -->
+    <!-- ========================================================= -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-bottom">
+
+            <h5 class="fw-bold mb-0">
+                Assay Information
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            {% if order.assay.description %}
+
+                <p class="mb-0">
+                    {{ order.assay.description|linebreaksbr }}
+                </p>
+
+            {% else %}
+
+                <span class="text-muted">
+                    No assay description available.
+                </span>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================ -->
+
+    <!-- LABORATORY RESULT -->
+
+    <!-- ============================================================ -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+
+    <div class="card-header bg-white border-bottom">
+
+        <div class="d-flex justify-content-between align-items-center">
+
+            <div>
+
+                <h5 class="fw-bold mb-1">
+                    Laboratory Result
+                </h5>
+
+                <small class="text-muted">
+                    Result recorded for this assay
+                </small>
+
+            </div>
+
+            {% if order.result %}
+
+                <span class="badge text-bg-success">
+                    Result Recorded
+                </span>
+
+            {% else %}
+
+                <span class="badge text-bg-warning">
+                    Result Pending
+                </span>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <div class="card-body">
+
+        {% if order.result %}
+
+
+            <!-- ================================================== -->
+            <!-- BINARY RESULT -->
+            <!-- ================================================== -->
+
+            {% if order.result.binary_result %}
+
+                <div class="mb-4">
+
+                    <small class="text-muted d-block mb-2">
+                        Result
+                    </small>
+
+                    {% if order.result.binary_result.result == "POS" %}
+
+                        <span class="badge text-bg-danger fs-6">
+                            Positive (+)
+                        </span>
+
+                    {% elif order.result.binary_result.result == "NEG" %}
+
+                        <span class="badge text-bg-success fs-6">
+                            Negative (-)
+                        </span>
+
+                    {% else %}
+
+                        <span class="badge text-bg-secondary fs-6">
+                            {{ order.result.binary_result.get_result_display }}
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+            <!-- ================================================== -->
+            <!-- GRAM STAIN RESULT -->
+            <!-- ================================================== -->
+
+            {% elif order.result.gram_result %}
+
+                <div class="mb-4">
+
+                    <small class="text-muted d-block mb-2">
+                        Gram Stain Result
+                    </small>
+
+                    <div class="fs-5">
+
+                        {{ order.result.gram_result.get_result_display }}
+
+                    </div>
+
+                </div>
+
+
+            <!-- ================================================== -->
+            <!-- TSI RESULT -->
+            <!-- ================================================== -->
+
+            {% elif order.result.tsi_result %}
+
+                <div class="mb-4">
+
+                    <small class="text-muted d-block mb-2">
+                        TSI Result
+                    </small>
+
+                    <span class="badge text-bg-primary fs-6">
+
+                        {{ order.result.tsi_result.get_result_display }}
+
+                    </span>
+
+                </div>
+
+
+            <!-- ================================================== -->
+            <!-- CULTURE RESULT -->
+            <!-- ================================================== -->
+
+            {% elif order.result.culture_result %}
+
+                <div class="mb-4">
+
+                    <h6 class="fw-bold mb-3">
+                        Culture Result
+                    </h6>
+
+
+                    <div class="row g-4">
+
+
+                        <!-- Growth -->
+
+                        <div class="col-md-6">
+
+                            <small class="text-muted d-block mb-1">
+                                Growth
+                            </small>
+
+                            {% if order.result.culture_result.growth == "GROWTH" %}
+
+                                <span class="badge text-bg-success fs-6">
+                                    Growth
+                                </span>
+
+                            {% elif order.result.culture_result.growth == "NO_GROWTH" %}
+
+                                <span class="badge text-bg-secondary fs-6">
+                                    No Growth
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge text-bg-secondary">
+                                    {{ order.result.culture_result.get_growth_display }}
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- Organism -->
+
+                        <div class="col-md-6">
+
+                            <small class="text-muted d-block mb-1">
+                                Organism Identified
+                            </small>
+
+                            {% if order.result.culture_result.organism_name %}
+
+                                <strong>
+                                    {{ order.result.culture_result.organism_name }}
+                                </strong>
+
+                            {% else %}
+
+                                <span class="text-muted">
+                                    —
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- Colony Description -->
+
+                        {% if order.result.culture_result.colony_description %}
+
+                            <div class="col-12">
+
+                                <small class="text-muted d-block mb-1">
+                                    Colony Description
+                                </small>
+
+                                <div class="border rounded p-3 bg-light">
+
+                                    {{ order.result.culture_result.colony_description|linebreaksbr }}
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <!-- Identification Notes -->
+
+                        {% if order.result.culture_result.identification_notes %}
+
+                            <div class="col-12">
+
+                                <small class="text-muted d-block mb-1">
+                                    Identification Notes
+                                </small>
+
+                                <div class="border rounded p-3 bg-light">
+
+                                    {{ order.result.culture_result.identification_notes|linebreaksbr }}
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+            <!-- ================================================== -->
+            <!-- AST RESULT -->
+            <!-- ================================================== -->
+
+            {% elif order.result.ast_result %}
+
+                <div class="mb-4">
+
+                    <h6 class="fw-bold mb-3">
+                        Antibiotic Sensitivity Test
+                    </h6>
+
+
+                    <div class="table-responsive">
+
+                        <table class="table table-bordered table-hover align-middle">
+
+                            <thead class="table-light">
+
+                                <tr>
+
+                                    <th>
+                                        Antibiotic
+                                    </th>
+
+                                    <th>
+                                        Code
+                                    </th>
+
+                                    <th>
+                                        Interpretation
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody>
+
+                                {% for item in order.result.ast_result.items.all %}
+
+                                    <tr>
+
+                                        <td>
+
+                                            {% if item.antibiotic.name %}
+
+                                                {{ item.antibiotic.name }}
+
+                                            {% else %}
+
+                                                —
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <td>
+
+                                            <span class="badge text-bg-light border">
+
+                                                {{ item.antibiotic.code }}
+
+                                            </span>
+
+                                        </td>
+
+
+                                        <td>
+
+                                            {% if item.interpretation == "S" %}
+
+                                                <span class="badge text-bg-success">
+
+                                                    Sensitive
+
+                                                </span>
+
+                                            {% elif item.interpretation == "I" %}
+
+                                                <span class="badge text-bg-warning">
+
+                                                    Intermediate
+
+                                                </span>
+
+                                            {% elif item.interpretation == "R" %}
+
+                                                <span class="badge text-bg-danger">
+
+                                                    Resistant
+
+                                                </span>
+
+                                            {% else %}
+
+                                                <span class="badge text-bg-secondary">
+
+                                                    {{ item.get_interpretation_display }}
+
+                                                </span>
+
+                                            {% endif %}
+
+                                        </td>
+
+                                    </tr>
+
+                                {% empty %}
+
+                                    <tr>
+
+                                        <td colspan="3"
+                                            class="text-center text-muted py-4">
+
+                                            No antibiotic results recorded.
+
+                                        </td>
+
+                                    </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+
+            <!-- ================================================== -->
+            <!-- NDHI RESULT -->
+            <!-- ================================================== -->
+
+            {% elif order.result.ndhi_result %}
+
+                <div class="mb-4">
+
+                    <h6 class="fw-bold mb-3">
+                        NDHI Result
+                    </h6>
+
+                    <div class="border rounded p-3 bg-light">
+
+                        {{ order.result.ndhi_result.result|linebreaksbr }}
+
+                    </div>
+
+                </div>
+
+
+            <!-- ================================================== -->
+            <!-- PCR RESULT -->
+            <!-- ================================================== -->
+
+            {% elif order.result.pcr_result %}
+
+                <div class="mb-4">
+
+                    <h6 class="fw-bold mb-3">
+                        PCR Result
+                    </h6>
+
+
+                    <div class="row g-4">
+
+
+                        <!-- Target -->
+
+                        <div class="col-md-6">
+
+                            <small class="text-muted d-block mb-1">
+                                Target
+                            </small>
+
+                            <strong>
+                                {{ order.result.pcr_result.target }}
+                            </strong>
+
+                        </div>
+
+
+                        <!-- Cq/Ct -->
+
+                        <div class="col-md-6">
+
+                            <small class="text-muted d-block mb-1">
+                                Cq/Ct
+                            </small>
+
+                            {% if order.result.pcr_result.cq_ct %}
+
+                                <strong>
+                                    {{ order.result.pcr_result.cq_ct }}
+                                </strong>
+
+                            {% else %}
+
+                                <span class="text-muted">
+                                    —
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- Result -->
+
+                        <div class="col-md-6">
+
+                            <small class="text-muted d-block mb-1">
+                                Result
+                            </small>
+
+                            <strong>
+                                {{ order.result.pcr_result.result }}
+                            </strong>
+
+                        </div>
+
+
+                        <!-- Interpretation -->
+
+                        <div class="col-md-6">
+
+                            <small class="text-muted d-block mb-1">
+                                Interpretation
+                            </small>
+
+                            {% if order.result.pcr_result.interpretation %}
+
+                                <strong>
+                                    {{ order.result.pcr_result.interpretation }}
+                                </strong>
+
+                            {% else %}
+
+                                <span class="text-muted">
+                                    —
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- PCR Attachment -->
+
+                    {% if order.result.pcr_result.picture %}
+
+                        <div class="mt-4">
+
+                            <small class="text-muted d-block mb-2">
+                                Attached Result
+                            </small>
+
+                            <a href="{{ order.result.pcr_result.picture.url }}"
+                               target="_blank"
+                               class="btn btn-outline-primary">
+
+                                <i class="fas fa-file me-1"></i>
+
+                                View PCR Attachment
+
+                            </a>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+            <!-- ================================================== -->
+            <!-- UNKNOWN RESULT TYPE -->
+            <!-- ================================================== -->
+
+            {% else %}
+
+                <div class="alert alert-warning mb-0">
+
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+
+                    A result has been recorded, but no recognized
+                    result type is associated with this assay.
+
+                </div>
+
+            {% endif %}
+
+
+            <!-- ================================================== -->
+            <!-- REMARKS -->
+            <!-- ================================================== -->
+
+            {% if order.result.remarks %}
+
+                <div class="border-top pt-3 mt-4">
+
+                    <small class="text-muted d-block mb-2">
+                        Remarks
+                    </small>
+
+                    <div>
+
+                        {{ order.result.remarks|linebreaksbr }}
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+            <!-- ================================================== -->
+            <!-- RESULT METADATA -->
+            <!-- ================================================== -->
+
+            <div class="border-top pt-3 mt-4">
+
+                <div class="row g-4">
+
+
+                    <!-- Performed By -->
+
+                    <div class="col-md-4">
+
+                        <small class="text-muted d-block">
+                            Performed By
+                        </small>
+
+                        {% if order.result.performed_by %}
+
+                            <strong>
+                                {{ order.result.performed_by }}
+                            </strong>
+
+                        {% else %}
+
+                            <span class="text-muted">
+                                —
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Reported At -->
+
+                    <div class="col-md-4">
+
+                        <small class="text-muted d-block">
+                            Reported At
+                        </small>
+
+                        <strong>
+
+                            {{ order.result.reported_at|date:"d M Y, H:i" }}
+
+                        </strong>
+
+                    </div>
+
+
+                    <!-- Verified By -->
+
+                    <div class="col-md-4">
+
+                        <small class="text-muted d-block">
+                            Verified By
+                        </small>
+
+                        {% if order.result.verified_by %}
+
+                            <strong>
+                                {{ order.result.verified_by }}
+                            </strong>
+
+                        {% else %}
+
+                            <span class="text-muted">
+                                Not verified
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        {% else %}
+
+
+            <!-- ================================================== -->
+            <!-- NO RESULT -->
+            <!-- ================================================== -->
+
+            <div class="text-center py-5">
+
+                <i class="fas fa-flask fa-2x text-muted mb-3"></i>
+
+                <h6 class="fw-bold">
+                    No Laboratory Result
+                </h6>
+
+                <p class="text-muted mb-3">
+
+                    A result has not yet been recorded for this assay.
+
+                </p>
+
+                <a href="{% url 'assay_result_create' order.pk %}"
+                   class="btn btn-primary">
+
+                    <i class="fas fa-plus me-1"></i>
+
+                    Enter Result
+
+                </a>
+
+            </div>
+
+
+        {% endif %}
+
+    </div>
+
+
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- ORDER INFORMATION -->
+    <!-- ========================================================= -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-bottom">
+
+            <h5 class="fw-bold mb-0">
+                Order Information
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row g-4">
+
+                <!-- Requested -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Requested
+                    </small>
+
+                    <strong>
+                        {{ order.requested_at|date:"d M Y, H:i" }}
+                    </strong>
+
+                </div>
+
+
+                <!-- Assigned To -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Assigned To
+                    </small>
+
+                    {% if order.assigned_to %}
+
+                        <strong>
+                            {{ order.assigned_to }}
+                        </strong>
+
+                    {% else %}
+
+                        <span class="text-muted">
+                            Not assigned
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Completed -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Completed
+                    </small>
+
+                    {% if order.completed_at %}
+
+                        <strong>
+                            {{ order.completed_at|date:"d M Y, H:i" }}
+                        </strong>
+
+                    {% else %}
+
+                        <span class="text-muted">
+                            —
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- ACTIONS -->
+    <!-- ========================================================= -->
+
+    <div class="d-flex justify-content-end gap-2 mb-4">
+
+        {% if not order.result %}
+
+            <a href="{% url 'assay_result_create' order.pk %}"
+               class="btn btn-primary">
+
+                <i class="fas fa-flask me-1"></i>
+                Enter Result
+
+            </a>
+
+        {% endif %}
+
+
+        <a href="{% url 'sample_detail' order.sample.pk %}"
+           class="btn btn-secondary">
+
+            <i class="fas fa-arrow-left me-1"></i>
+            Back to Sample
+
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}
+

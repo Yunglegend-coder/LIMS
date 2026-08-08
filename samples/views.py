@@ -1,12 +1,14 @@
 from django.db.models import Q
-from django.views.generic import ListView
 from .forms import SampleForm
 from .services import RegisterSampleService
 from .models import Sample
 from django.contrib import messages
 from django.shortcuts import redirect
-from django.urls import reverse_lazy
-from django.views.generic import CreateView
+from django.views.generic import (
+    ListView,
+    CreateView,
+    DetailView,
+)
 
 
 class SampleListView(ListView):
@@ -56,3 +58,23 @@ class SampleCreateView(CreateView):
         )
 
         return redirect("sample_list")
+
+
+class SampleDetailView(DetailView):
+    model = Sample
+    template_name = "samples/sample_detail.html"
+    context_object_name = "sample"
+
+    def get_queryset(self):
+        return (
+            Sample.objects
+            .select_related(
+                "farm",
+                "farm__customer",
+                "house",
+                "registered_by",
+            )
+            .prefetch_related(
+                "assay_orders__assay",
+            )
+        )

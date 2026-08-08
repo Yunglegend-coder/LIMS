@@ -9,11 +9,6 @@ class LaboratorySection(models.TextChoices):
     SEROLOGY = "SERO", "Serology"
     MOLECULAR = "MOLE", "Molecular Biology"
 
-class LaboratorySection(models.TextChoices):
-    MICROBIOLOGY = "MICRO", "Microbiology"
-    SEROLOGY = "SERO", "Serology"
-    MOLECULAR = "MOLE", "Molecular Biology"
-
 class AssayCategory(models.TextChoices):
     BINARY = "BINARY", "Binary"
     GRAM = "GRAM", "Gram Stain"
@@ -23,6 +18,7 @@ class AssayCategory(models.TextChoices):
     PCR = "PCR", "PCR"
     COUNT = "COUNT", "Count"
     NDHI = "NDHI", "NDHI"
+    TSI = "TSI", "TSI"
 
 
 
@@ -44,11 +40,6 @@ class AssayType(models.Model):
         max_length=20,
         choices=AssayCategory.choices,
         default=AssayCategory.BINARY,
-    )
-
-    laboratory_section = models.CharField(
-        max_length=10,
-        choices=LaboratorySection.choices,
     )
 
     laboratory_section = models.CharField(

@@ -1,14 +1,15 @@
 from django.contrib import admin
-
 from .models import (
     AssayResult,
     BinaryResult,
     GramStainResult,
+    TSIResult,
     ASTResult,
     ASTResultItem,
     InstrumentResult,
     CountResult,
     FungalCultureResult,
+    Antibiotic
 )
 
 class ASTResultItemInline(admin.TabularInline):
@@ -79,6 +80,17 @@ class GramStainResultAdmin(admin.ModelAdmin):
     def case_code(self, obj):
         return obj.assay_result.assay_order.sample.case_code
 
+@admin.register(TSIResult)
+class TSIResultAdmin(admin.ModelAdmin):
+    list_display = (
+        "case_code",
+        "result",
+    )
+
+    def case_code(self, obj):
+        return obj.assay_result.assay_order.sample.case_code
+
+
 @admin.register(ASTResult)
 class ASTResultAdmin(admin.ModelAdmin):
     list_display = (
@@ -132,4 +144,40 @@ class FungalCultureResultAdmin(admin.ModelAdmin):
 
     def case_code(self, obj):
         return obj.assay_result.assay_order.sample.case_code
+
+@admin.register(Antibiotic)
+class AntibioticAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "code",
+        "name",
+    )
+
+    search_fields = (
+        "code",
+        "name",
+    )
+
+    ordering = (
+        "code",
+    )
+
+@admin.register(ASTResultItem)
+class ASTResultItemAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "ast_result",
+        "antibiotic",
+        "interpretation",
+    )
+
+    list_filter = (
+        "interpretation",
+    )
+
+    search_fields = (
+        "antibiotic__code",
+        "antibiotic__name",
+        "ast_result__assay_result__assay_order__sample__case_code",
+    )
 

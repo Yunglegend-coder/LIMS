@@ -1,0 +1,496 @@
+{% extends "base.html" %}
+
+{% block title %}
+AST Result — {{ order.sample.case_code }}
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+
+<!-- Page Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+
+    <div>
+
+        <h2 class="fw-bold mb-1">
+            Antibiotic Sensitivity Test
+        </h2>
+
+        <p class="text-muted mb-0">
+            Enter AST results for
+            <strong>{{ order.sample.case_code }}</strong>
+        </p>
+
+    </div>
+
+    <div class="mt-3 mt-md-0">
+
+        <a href="{% url 'assay_order_detail' order.pk %}"
+           class="btn btn-outline-secondary">
+
+            <i class="fas fa-arrow-left me-1"></i>
+            Back to Work Order
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- Work Order Information -->
+<div class="card border-0 shadow-sm mb-4">
+
+    <div class="card-header bg-white border-bottom">
+
+        <h5 class="fw-bold mb-0">
+            Work Order Information
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row g-4">
+
+            <div class="col-md-4">
+
+                <small class="text-muted d-block">
+                    Case Code
+                </small>
+
+                <strong class="text-primary fs-5">
+                    {{ order.sample.case_code }}
+                </strong>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <small class="text-muted d-block">
+                    Sample Type
+                </small>
+
+                <strong>
+                    {{ order.sample.get_sample_type_display }}
+                </strong>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <small class="text-muted d-block">
+                    Assay
+                </small>
+
+                <strong>
+                    {{ order.assay.name }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<form method="post">
+
+    {% csrf_token %}
+
+
+    <!-- AST RESULTS -->
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-bottom">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+
+                    <h5 class="fw-bold mb-1">
+                        Antibiotic Sensitivity Results
+                    </h5>
+
+                    <small class="text-muted">
+                        Record the antimicrobial susceptibility of the isolate.
+                    </small>
+
+                </div>
+
+                <button type="button"
+                        id="add-antibiotic"
+                        class="btn btn-primary btn-sm">
+
+                    <i class="fas fa-plus me-1"></i>
+                    Add Antibiotic
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body">
+
+            {{ formset.management_form }}
+
+
+            {% if not formset.forms %}
+
+                <div class="alert alert-warning">
+
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+
+                    No antibiotic records are available.
+
+                    Please add antibiotics through the
+                    <strong>Antibiotic</strong> section in the
+                    Django administration panel.
+
+                </div>
+
+            {% endif %}
+
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered align-middle">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th style="width: 45%;">
+                                Antibiotic
+                            </th>
+
+                            <th style="width: 40%;">
+                                Interpretation
+                            </th>
+
+                            <th style="width: 15%;"
+                                class="text-center">
+
+                                Action
+
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="antibiotic-formset">
+
+                        {% for item_form in formset %}
+
+                            <tr class="antibiotic-row">
+
+                                <td>
+
+                                    {{ item_form.antibiotic }}
+
+                                    {% if item_form.antibiotic.errors %}
+
+                                        <div class="text-danger small mt-1">
+
+                                            {{ item_form.antibiotic.errors }}
+
+                                        </div>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ item_form.interpretation }}
+
+                                    {% if item_form.interpretation.errors %}
+
+                                        <div class="text-danger small mt-1">
+
+                                            {{ item_form.interpretation.errors }}
+
+                                        </div>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td class="text-center">
+
+                                    {% if item_form.DELETE %}
+
+                                        <div class="d-none">
+
+                                            {{ item_form.DELETE }}
+
+                                        </div>
+
+                                    {% endif %}
+
+                                    <button type="button"
+                                            class="btn btn-outline-danger btn-sm remove-antibiotic">
+
+                                        <i class="fas fa-trash"></i>
+
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+
+                            {% if item_form.non_field_errors %}
+
+                                <tr>
+
+                                    <td colspan="3">
+
+                                        <div class="alert alert-danger mb-0">
+
+                                            {{ item_form.non_field_errors }}
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- REMARKS -->
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-bottom">
+
+            <h5 class="fw-bold mb-0">
+                Remarks
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            {{ form.remarks }}
+
+            {% if form.remarks.errors %}
+
+                <div class="text-danger small mt-2">
+
+                    {{ form.remarks.errors }}
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ACTIONS -->
+    <div class="d-flex justify-content-end gap-2 mb-4">
+
+        <a href="{% url 'assay_order_detail' order.pk %}"
+           class="btn btn-secondary">
+
+            <i class="fas fa-times me-1"></i>
+            Cancel
+
+        </a>
+
+
+        <button type="submit"
+                class="btn btn-success">
+
+            <i class="fas fa-save me-1"></i>
+            Save AST Result
+
+        </button>
+
+    </div>
+
+</form>
+
+
+</div>
+
+<!-- ========================================================= -->
+
+<!-- EMPTY FORM TEMPLATE                                       -->
+
+<!-- ========================================================= -->
+
+<table class="d-none">
+
+
+<tbody>
+
+    <tr id="empty-antibiotic-form"
+        class="antibiotic-row">
+
+        <td>
+
+            {{ formset.empty_form.antibiotic }}
+
+        </td>
+
+        <td>
+
+            {{ formset.empty_form.interpretation }}
+
+        </td>
+
+        <td class="text-center">
+
+            {{ formset.empty_form.DELETE }}
+
+            <button type="button"
+                    class="btn btn-outline-danger btn-sm remove-antibiotic">
+
+                <i class="fas fa-trash"></i>
+
+            </button>
+
+        </td>
+
+    </tr>
+
+</tbody>
+
+
+</table>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const container =
+        document.getElementById("antibiotic-formset");
+
+    const addButton =
+        document.getElementById("add-antibiotic");
+
+    const totalForms =
+        document.getElementById("id_ast-TOTAL_FORMS");
+
+    const emptyForm =
+        document.getElementById("empty-antibiotic-form");
+
+
+    function attachRemoveButton(row) {
+
+        const button =
+            row.querySelector(".remove-antibiotic");
+
+        if (!button) {
+            return;
+        }
+
+
+        button.addEventListener("click", function () {
+
+            const deleteInput =
+                row.querySelector(
+                    'input[type="checkbox"][name$="-DELETE"]'
+                );
+
+
+            if (deleteInput) {
+
+                deleteInput.checked = true;
+
+                row.style.display = "none";
+
+            } else {
+
+                row.remove();
+
+            }
+
+        });
+
+    }
+
+
+    document
+        .querySelectorAll(".antibiotic-row")
+        .forEach(function (row) {
+
+            attachRemoveButton(row);
+
+        });
+
+
+    addButton.addEventListener("click", function () {
+
+        const index =
+            parseInt(totalForms.value);
+
+
+        let html =
+            emptyForm.outerHTML;
+
+
+        html = html.replace(
+            /__prefix__/g,
+            index
+        );
+
+
+        html = html.replace(
+            'id="empty-antibiotic-form"',
+            ''
+        );
+
+
+        container.insertAdjacentHTML(
+            "beforeend",
+            html
+        );
+
+
+        totalForms.value =
+            index + 1;
+
+
+        const rows =
+            container.querySelectorAll(
+                ".antibiotic-row"
+            );
+
+
+        attachRemoveButton(
+            rows[rows.length - 1]
+        );
+
+    });
+
+});
+
+</script>
+
+{% endblock %}

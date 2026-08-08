@@ -1,0 +1,839 @@
+{% extends "base.html" %}
+
+{% block title %}
+Sample {{ sample.case_code }}
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- Page Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+
+        <div>
+            <h2 class="fw-bold mb-1">
+                Sample {{ sample.case_code }}
+            </h2>
+
+            <p class="text-muted mb-0">
+                Laboratory sample details and registration information
+            </p>
+        </div>
+
+        <div class="mt-3 mt-md-0">
+
+            <a href="{% url 'sample_list' %}"
+               class="btn btn-outline-secondary">
+
+                <i class="fas fa-arrow-left me-1"></i>
+                Back to Samples
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- SAMPLE OVERVIEW -->
+    <!-- ========================================================= -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-bottom">
+
+            <h5 class="fw-bold mb-0">
+                Sample Overview
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row g-4">
+
+                <!-- Case Code -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Case Code
+                    </small>
+
+                    <strong class="text-primary fs-5">
+                        {{ sample.case_code }}
+                    </strong>
+
+                </div>
+
+
+                <!-- Sample Type -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Sample Type
+                    </small>
+
+                    <strong>
+                        {{ sample.get_sample_type_display }}
+                    </strong>
+
+                </div>
+
+
+                <!-- Laboratory -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Laboratory
+                    </small>
+
+                    {% if sample.laboratory == "SERO" %}
+
+                        <span class="badge text-bg-info">
+                            Serology
+                        </span>
+
+                    {% elif sample.laboratory == "MICRO" %}
+
+                        <span class="badge text-bg-success">
+                            Microbiology
+                        </span>
+
+                    {% elif sample.laboratory == "MOLE" %}
+
+                        <span class="badge text-bg-primary">
+                            Molecular Biology
+                        </span>
+
+                    {% else %}
+
+                        <span class="badge text-bg-secondary">
+                            {{ sample.get_laboratory_display }}
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Status -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Status
+                    </small>
+
+                    {% if sample.status == "RECEIVED" %}
+
+                        <span class="badge text-bg-warning">
+                            {{ sample.get_status_display }}
+                        </span>
+
+                    {% elif sample.status == "IN_PROGRESS" %}
+
+                        <span class="badge text-bg-info">
+                            {{ sample.get_status_display }}
+                        </span>
+
+                    {% elif sample.status == "COMPLETED" %}
+
+                        <span class="badge text-bg-success">
+                            {{ sample.get_status_display }}
+                        </span>
+
+                    {% elif sample.status == "REPORTED" %}
+
+                        <span class="badge text-bg-primary">
+                            {{ sample.get_status_display }}
+                        </span>
+
+                    {% else %}
+
+                        <span class="badge text-bg-secondary">
+                            {{ sample.get_status_display }}
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Received Date -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Received Date
+                    </small>
+
+                    <strong>
+                        {{ sample.received_date|date:"d M Y" }}
+                    </strong>
+
+                </div>
+
+
+                <!-- Collection Date -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Collection Date
+                    </small>
+
+                    {% if sample.collection_date %}
+
+                        <strong>
+                            {{ sample.collection_date|date:"d M Y" }}
+                        </strong>
+
+                    {% else %}
+
+                        <span class="text-muted">
+                            —
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- SAMPLE LOCATION -->
+    <!-- ========================================================= -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-bottom">
+
+            <h5 class="fw-bold mb-0">
+                Sample Location
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row g-4">
+
+                <!-- Customer -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Customer
+                    </small>
+
+                    {% if sample.farm and sample.farm.customer %}
+
+                        <strong>
+                            {{ sample.farm.customer.name }}
+                        </strong>
+
+                    {% else %}
+
+                        <span class="text-muted">
+                            —
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Farm -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Farm
+                    </small>
+
+                    {% if sample.farm %}
+
+                        <strong>
+                            {{ sample.farm.name }}
+                        </strong>
+
+                    {% else %}
+
+                        <span class="text-muted">
+                            —
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- House -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        House
+                    </small>
+
+                    {% if sample.house %}
+
+                        <strong>
+                            {{ sample.house.name }}
+                        </strong>
+
+                    {% else %}
+
+                        <span class="text-muted">
+                            —
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- CLINICAL / SAMPLE HISTORY -->
+    <!-- ========================================================= -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-bottom">
+
+            <h5 class="fw-bold mb-0">
+                Clinical / Sample History
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row g-4">
+
+                {% if sample.history %}
+
+                    <div class="col-md-6">
+
+                        <small class="text-muted d-block">
+                            History
+                        </small>
+
+                        <div>
+                            {{ sample.history|linebreaksbr }}
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if sample.source_of_birds %}
+
+                    <div class="col-md-6">
+
+                        <small class="text-muted d-block">
+                            Source of Birds
+                        </small>
+
+                        <div>
+                            {{ sample.source_of_birds|linebreaksbr }}
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if sample.source_of_water %}
+
+                    <div class="col-md-6">
+
+                        <small class="text-muted d-block">
+                            Source of Water
+                        </small>
+
+                        <div>
+                            {{ sample.source_of_water|linebreaksbr }}
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if sample.feed_type %}
+
+                    <div class="col-md-6">
+
+                        <small class="text-muted d-block">
+                            Feed Type
+                        </small>
+
+                        <div>
+                            {{ sample.feed_type|linebreaksbr }}
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if sample.last_vaccination %}
+
+                    <div class="col-md-6">
+
+                        <small class="text-muted d-block">
+                            Last Vaccination
+                        </small>
+
+                        <div>
+                            {{ sample.last_vaccination|linebreaksbr }}
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if sample.antibiotics_used %}
+
+                    <div class="col-md-6">
+
+                        <small class="text-muted d-block">
+                            Antibiotics Used
+                        </small>
+
+                        <div>
+                            {{ sample.antibiotics_used|linebreaksbr }}
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if sample.mortality_pattern %}
+
+                    <div class="col-md-6">
+
+                        <small class="text-muted d-block">
+                            Mortality Pattern
+                        </small>
+
+                        <div>
+                            {{ sample.mortality_pattern|linebreaksbr }}
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if sample.pathology %}
+
+                    <div class="col-md-6">
+
+                        <small class="text-muted d-block">
+                            Pathology
+                        </small>
+
+                        <div>
+                            {{ sample.pathology|linebreaksbr }}
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if sample.remarks %}
+
+                    <div class="col-12">
+
+                        <small class="text-muted d-block">
+                            Remarks
+                        </small>
+
+                        <div>
+                            {{ sample.remarks|linebreaksbr }}
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if not sample.history and not sample.source_of_birds and not sample.source_of_water and not sample.feed_type and not sample.last_vaccination and not sample.antibiotics_used and not sample.mortality_pattern and not sample.pathology and not sample.remarks %}
+
+                    <div class="col-12">
+
+                        <span class="text-muted">
+                            No clinical history or additional information recorded.
+                        </span>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- REGISTRATION INFORMATION -->
+    <!-- ========================================================= -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-bottom">
+
+            <h5 class="fw-bold mb-0">
+                Registration Information
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row g-4">
+
+                <!-- Registered By -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Registered By
+                    </small>
+
+                    {% if sample.registered_by %}
+
+                        <strong>
+                            {{ sample.registered_by }}
+                        </strong>
+
+                    {% else %}
+
+                        <span class="text-muted">
+                            —
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Created -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Created
+                    </small>
+
+                    <strong>
+                        {{ sample.created_at|date:"d M Y, H:i" }}
+                    </strong>
+
+                </div>
+
+
+                <!-- Last Updated -->
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Last Updated
+                    </small>
+
+                    <strong>
+                        {{ sample.updated_at|date:"d M Y, H:i" }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- LABORATORY WORKLIST -->
+    <!-- ========================================================= -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-header bg-white border-bottom">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+
+                    <h5 class="fw-bold mb-1">
+                        Laboratory Worklist
+                    </h5>
+
+                    <small class="text-muted">
+                        Assays associated with this sample
+                    </small>
+
+                </div>
+
+                <span class="badge text-bg-secondary">
+
+                    {{ sample.assay_orders.count }}
+                    assay{{ sample.assay_orders.count|pluralize }}
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body p-0">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th class="ps-4">
+                                Assay
+                            </th>
+
+                            <th>
+                                Category
+                            </th>
+
+                            <th>
+                                Laboratory
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Requested
+                            </th>
+
+                            <th class="text-end pe-4">
+                                Action
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                    {% for order in sample.assay_orders.all %}
+
+                        <tr>
+
+                            <!-- Assay -->
+                            <td class="ps-4">
+
+                                <strong>
+                                    {{ order.assay.name }}
+                                </strong>
+
+                                {% if order.assay.description %}
+
+                                    <small class="text-muted d-block">
+                                        {{ order.assay.description }}
+                                    </small>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- Category -->
+                            <td>
+
+                                <span class="badge text-bg-light border">
+
+                                    {{ order.assay.get_category_display }}
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- Laboratory -->
+                            <td>
+
+                                {% if order.assay.laboratory_section == "MICRO" %}
+
+                                    <span class="badge text-bg-success">
+                                        Microbiology
+                                    </span>
+
+                                {% elif order.assay.laboratory_section == "SERO" %}
+
+                                    <span class="badge text-bg-info">
+                                        Serology
+                                    </span>
+
+                                {% elif order.assay.laboratory_section == "MOLE" %}
+
+                                    <span class="badge text-bg-primary">
+                                        Molecular Biology
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge text-bg-secondary">
+                                        {{ order.assay.get_laboratory_section_display }}
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- Status -->
+                            <td>
+
+                                {% if order.status == "PENDING" %}
+
+                                    <span class="badge text-bg-warning">
+                                        Pending
+                                    </span>
+
+                                {% elif order.status == "IN_PROGRESS" %}
+
+                                    <span class="badge text-bg-info">
+                                        In Progress
+                                    </span>
+
+                                {% elif order.status == "COMPLETED" %}
+
+                                    <span class="badge text-bg-success">
+                                        Completed
+                                    </span>
+
+                                {% elif order.status == "VERIFIED" %}
+
+                                    <span class="badge text-bg-primary">
+                                        Verified
+                                    </span>
+
+                                {% elif order.status == "CANCELLED" %}
+
+                                    <span class="badge text-bg-danger">
+                                        Cancelled
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge text-bg-secondary">
+                                        {{ order.get_status_display }}
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- Requested -->
+                            <td>
+
+                                <small class="text-muted">
+                                    {{ order.requested_at|date:"d M Y, H:i" }}
+                                </small>
+
+                            </td>
+
+
+                            <!-- Action -->
+                            <td class="text-end pe-4">
+
+                                <a href="{% url 'assay_order_detail' order.pk %}"
+                                   class="btn btn-sm btn-outline-primary">
+
+                                    <i class="fas fa-flask me-1"></i>
+                                    Open
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+
+                            <td colspan="6"
+                                class="text-center py-5">
+
+                                <div class="text-muted">
+
+                                    <div class="mb-3">
+
+                                        <i class="fas fa-flask fa-2x"></i>
+
+                                    </div>
+
+                                    <h6 class="fw-bold">
+                                        No assay orders
+                                    </h6>
+
+                                    <p class="mb-0">
+                                        No laboratory assays have been associated with this sample.
+                                    </p>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- ACTIONS -->
+    <!-- ========================================================= -->
+
+    <div class="d-flex justify-content-end gap-2 mb-4">
+
+        <a href="{% url 'sample_list' %}"
+           class="btn btn-secondary">
+
+            <i class="fas fa-arrow-left me-1"></i>
+            Back to Samples
+
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}
+Gram Stain Result — {{ order.sample.case_code }}
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+
+<!-- Page Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+
+    <div>
+        <h2 class="fw-bold mb-1">
+            Gram Stain Result
+        </h2>
+
+        <p class="text-muted mb-0">
+            Enter Gram stain result for {{ order.sample.case_code }}
+        </p>
+    </div>
+
+    <div class="mt-3 mt-md-0">
+        <a href="{% url 'assay_order_detail' order.pk %}"
+           class="btn btn-outline-secondary">
+
+            <i class="fas fa-arrow-left me-1"></i>
+            Back to Work Order
+
+        </a>
+    </div>
+
+</div>
+
+
+<!-- Sample Information -->
+<div class="card border-0 shadow-sm mb-4">
+
+    <div class="card-header bg-white border-bottom">
+        <h5 class="fw-bold mb-0">
+            Assay Information
+        </h5>
+    </div>
+
+    <div class="card-body">
+
+        <div class="row g-4">
+
+            <div class="col-md-4">
+
+                <small class="text-muted d-block">
+                    Case Code
+                </small>
+
+                <strong class="text-primary">
+                    {{ order.sample.case_code }}
+                </strong>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <small class="text-muted d-block">
+                    Sample Type
+                </small>
+
+                <strong>
+                    {{ order.sample.get_sample_type_display }}
+                </strong>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <small class="text-muted d-block">
+                    Assay
+                </small>
+
+                <strong>
+                    {{ order.assay.name }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- Result Form -->
+<div class="card border-0 shadow-sm mb-4">
+
+    <div class="card-header bg-white border-bottom">
+
+        <h5 class="fw-bold mb-0">
+            Gram Stain Result
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+
+            <!-- Result -->
+            <div class="mb-4">
+
+                <label class="form-label fw-bold">
+                    Gram Stain Interpretation
+                </label>
+
+                {% for radio in form.result %}
+
+                    <div class="form-check mb-2">
+
+                        {{ radio.tag }}
+
+                        <label class="form-check-label">
+                            {{ radio.choice_label }}
+                        </label>
+
+                    </div>
+
+                {% endfor %}
+
+                {% if form.result.errors %}
+                    <div class="text-danger small mt-2">
+                        {{ form.result.errors }}
+                    </div>
+                {% endif %}
+
+            </div>
+
+
+            <!-- Remarks -->
+            <div class="mb-4">
+
+                {{ form.remarks.label_tag }}
+
+                {{ form.remarks }}
+
+                {% if form.remarks.errors %}
+                    <div class="text-danger small mt-2">
+                        {{ form.remarks.errors }}
+                    </div>
+                {% endif %}
+
+            </div>
+
+
+            <!-- Actions -->
+            <div class="d-flex justify-content-end gap-2">
+
+                <a href="{% url 'assay_order_detail' order.pk %}"
+                   class="btn btn-secondary">
+
+                    Cancel
+
+                </a>
+
+                <button type="submit"
+                        class="btn btn-primary">
+
+                    <i class="fas fa-save me-1"></i>
+                    Save Result
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+</div>
+
+{% endblock %}
