@@ -3,6 +3,7 @@ from .views import (
     SampleListView,
     SampleCreateView,
     SampleDetailView,
+    SampleFinalResultView,
 )
 
 
@@ -13,5 +14,10 @@ urlpatterns = [
         "<int:pk>/",
         SampleDetailView.as_view(),
         name="sample_detail",
+    ),
+        path(
+        "<int:pk>/final-result/",
+        SampleFinalResultView.as_view(),
+        name="sample_final_result",
     ),
 ]

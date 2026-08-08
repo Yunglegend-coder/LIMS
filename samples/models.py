@@ -146,5 +146,58 @@ class Sample(models.Model):
                 }
             )
 
+    def get_assay_progress(self):
+        """
+        Return the number of completed assays and the total number
+        of assays ordered for this sample.
+        """
+
+        total = self.assay_orders.count()
+
+        completed = self.assay_orders.filter(
+            status="COMPLETED"
+        ).count()
+
+        return completed, total
+
+    def get_assay_progress_display(self):
+        """
+        Return a human-readable assay progress string.
+        """
+
+        completed, total = self.get_assay_progress()
+
+        if total == 0:
+            return "No assays ordered"
+
+        return f"{completed}/{total} assays completed"
+
+    def update_status_from_assays(self):
+        """
+        Update the overall sample status based on its assay orders.
+        """
+
+        total = self.assay_orders.count()
+
+        completed = self.assay_orders.filter(
+            status="COMPLETED"
+        ).count()
+
+        if total == 0:
+            new_status = SampleStatus.RECEIVED
+
+        elif completed == 0:
+            new_status = SampleStatus.RECEIVED
+
+        elif completed < total:
+            new_status = SampleStatus.IN_PROGRESS
+
+        else:
+            new_status = SampleStatus.COMPLETED
+
+        if self.status != new_status:
+            self.status = new_status
+            self.save(update_fields=["status", "updated_at"])
+
     def __str__(self):
         return self.case_code

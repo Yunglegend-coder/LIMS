@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ assay.name }} — Pending Results
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- HEADER -->
+
+    <div class="d-flex
+                flex-column
+                flex-md-row
+                justify-content-between
+                align-items-md-center
+                mb-4">
+
+        <div>
+
+            <h2 class="fw-bold mb-1">
+                {{ assay.name }}
+            </h2>
+
+            <p class="text-muted mb-0">
+                Pending {{ assay.name }} results
+            </p>
+
+        </div>
+
+        <div class="mt-3 mt-md-0">
+
+            <a href="{% url 'pending_results' assay.laboratory_section %}"
+               class="btn btn-outline-secondary">
+
+                <i class="fas fa-arrow-left me-1"></i>
+
+                Back to Pending Results
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ASSAY INFORMATION -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="row g-4">
+
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Assay
+                    </small>
+
+                    <strong class="fs-5">
+                        {{ assay.name }}
+                    </strong>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Laboratory
+                    </small>
+
+                    <span class="badge text-bg-info">
+
+                        {{ assay.get_laboratory_section_display }}
+
+                    </span>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <small class="text-muted d-block">
+                        Pending Samples
+                    </small>
+
+                    <strong class="fs-5 text-warning">
+
+                        {{ orders|length }}
+
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- RESULT FORM -->
+
+    <form method="post">
+
+        {% csrf_token %}
+
+
+        <div class="card border-0 shadow-sm">
+
+            <div class="card-header bg-white border-bottom">
+
+                <div class="d-flex
+                            justify-content-between
+                            align-items-center">
+
+                    <h5 class="fw-bold mb-0">
+
+                        {{ assay.name }}
+
+                    </h5>
+
+                    <span class="badge text-bg-warning">
+
+                        {{ orders|length }} Pending
+
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="card-body">
+
+
+                {% if orders %}
+
+
+                    {% for order in orders %}
+
+                        <div class="border rounded p-3 mb-4">
+
+                            <!-- SAMPLE -->
+
+                            <div class="mb-3">
+
+                                <strong class="text-primary fs-5">
+
+                                    {{ order.sample.case_code }}
+
+                                </strong>
+
+                                <div class="small text-muted">
+
+                                    {{ order.sample.get_sample_type_display }}
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- BINARY RESULT -->
+
+                            {% if assay.category == "BINARY" %}
+
+                                <div class="row align-items-center">
+
+                                    <div class="col-md-4">
+
+                                        <strong>
+                                            {{ assay.name }}
+                                        </strong>
+
+                                    </div>
+
+
+                                    <div class="col-md-8">
+
+                                        <div class="form-check form-check-inline">
+
+                                            <input
+                                                class="form-check-input"
+                                                type="radio"
+                                                name="result_{{ order.pk }}"
+                                                value="POS"
+                                                id="positive_{{ order.pk }}"
+                                            >
+
+                                            <label
+                                                class="form-check-label"
+                                                for="positive_{{ order.pk }}"
+                                            >
+
+                                                +
+
+                                            </label>
+
+                                        </div>
+
+
+                                        <div class="form-check form-check-inline">
+
+                                            <input
+                                                class="form-check-input"
+                                                type="radio"
+                                                name="result_{{ order.pk }}"
+                                                value="NEG"
+                                                id="negative_{{ order.pk }}"
+                                            >
+
+                                            <label
+                                                class="form-check-label"
+                                                for="negative_{{ order.pk }}"
+                                            >
+
+                                                -
+
+                                            </label>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                            {% else %}
+
+                                <div class="alert alert-secondary mb-0">
+
+                                    Bulk entry for
+
+                                    <strong>
+                                        {{ assay.get_category_display }}
+                                    </strong>
+
+                                    will be implemented separately.
+
+                                </div>
+
+                            {% endif %}
+
+
+                        </div>
+
+                    {% endfor %}
+
+
+                    <!-- SAVE BUTTON -->
+
+                    <div class="d-flex justify-content-end">
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+
+                            <i class="fas fa-save me-1"></i>
+
+                            Save Results
+
+                        </button>
+
+                    </div>
+
+
+                {% else %}
+
+                    <div class="text-center py-5">
+
+                        <i class="fas fa-check-circle
+                                  fa-3x
+                                  text-success
+                                  mb-3"></i>
+
+                        <h5 class="fw-bold">
+
+                            No Pending Results
+
+                        </h5>
+
+                        <p class="text-muted mb-0">
+
+                            All {{ assay.name }} results
+                            have been completed.
+
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

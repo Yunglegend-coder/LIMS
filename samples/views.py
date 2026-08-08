@@ -78,3 +78,36 @@ class SampleDetailView(DetailView):
                 "assay_orders__assay",
             )
         )
+
+
+
+class SampleFinalResultView(DetailView):
+    model = Sample
+    template_name = "samples/sample_final_result.html"
+    context_object_name = "sample"
+
+    def get_queryset(self):
+        return (
+            Sample.objects
+            .select_related(
+                "farm",
+                "house",
+                "farm__customer",
+                "registered_by",
+            )
+            .prefetch_related(
+                "assay_orders__assay",
+                "assay_orders__result",
+                "assay_orders__result__binary_result",
+                "assay_orders__result__gram_result",
+                "assay_orders__result__tsi_result",
+                "assay_orders__result__ast_result",
+                "assay_orders__result__ast_result__items",
+                "assay_orders__result__ast_result__items__antibiotic",
+                "assay_orders__result__ndhi_result",
+                "assay_orders__result__pcr_result",
+                "assay_orders__result__instrument_result",
+                "assay_orders__result__count_result",
+                "assay_orders__result__fungal_result",
+            )
+        )

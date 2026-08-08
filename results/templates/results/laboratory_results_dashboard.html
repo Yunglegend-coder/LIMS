@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}
+Laboratory Results
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+
+<!-- Page Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+
+    <div>
+        <h2 class="fw-bold mb-1">
+            Laboratory Results
+        </h2>
+
+        <p class="text-muted mb-0">
+            Manage pending laboratory assay results.
+        </p>
+    </div>
+
+    <div class="mt-3 mt-md-0">
+
+        <span class="badge text-bg-warning fs-6">
+            {{ total_pending }} Pending
+        </span>
+
+    </div>
+
+</div>
+
+
+<!-- Laboratory Sections -->
+
+{% if grouped_results %}
+
+    {% for section, assays in grouped_results.items %}
+
+        <div class="card border-0 shadow-sm mb-4">
+
+            <!-- Laboratory Header -->
+            <div class="card-header bg-white border-bottom">
+
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <div>
+
+                        <h5 class="fw-bold mb-1">
+                            {{ section }}
+                        </h5>
+
+                        <small class="text-muted">
+                            Pending assays
+                        </small>
+
+                    </div>
+
+                    <span class="badge text-bg-warning">
+                        {{ assays|length }} assay{{ assays|length|pluralize }}
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- Assays -->
+            <div class="card-body">
+
+                <div class="row g-3">
+
+                    {% for item in assays %}
+
+                        <div class="col-md-6 col-xl-4">
+
+                            <a href="{% url 'pending_results' laboratory=section %}"
+                               class="text-decoration-none">
+
+                                <div class="card h-100 border shadow-sm">
+
+                                    <div class="card-body">
+
+                                        <div class="d-flex justify-content-between align-items-start">
+
+                                            <div>
+
+                                                <h6 class="fw-bold text-dark mb-1">
+                                                    {{ item.assay.name }}
+                                                </h6>
+
+                                                <small class="text-muted">
+                                                    {{ item.assay.get_category_display }}
+                                                </small>
+
+                                            </div>
+
+                                            <span class="badge text-bg-warning">
+                                                {{ item.count }} Pending
+                                            </span>
+
+                                        </div>
+
+                                        <div class="mt-3">
+
+                                            <span class="text-primary small">
+                                                View pending results
+                                                <i class="fas fa-arrow-right ms-1"></i>
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </a>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    {% endfor %}
+
+{% else %}
+
+    <!-- No Pending Results -->
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body text-center py-5">
+
+            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+
+            <h5 class="fw-bold">
+                No Pending Results
+            </h5>
+
+            <p class="text-muted mb-0">
+                There are currently no pending laboratory results.
+            </p>
+
+        </div>
+
+    </div>
+
+{% endif %}
+
+
+</div>
+
+{% endblock %}
