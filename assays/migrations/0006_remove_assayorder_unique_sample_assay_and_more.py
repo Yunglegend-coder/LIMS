@@ -40,6 +40,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('assays', '0005_alter_sampletypeassay_unique_together_and_more'),
+        ('results', '0001_initial'),
         ('samples', '0008_remove_sample_doc_subtype_sample_doc_subtypes'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
