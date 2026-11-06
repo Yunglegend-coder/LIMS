@@ -74,3 +74,11 @@ If the router assigns this computer a different address later, update `ALLOWED_H
 ## Report signatures and assay visibility
 
 Each user can upload or replace their PNG/JPG report signature from **My signature** in the top bar. PDF and DOCX exports include the lab logo, the exporting user's signature when uploaded, and the name of the user who entered each assay. Assay types can be marked **Biochemical** in the assay admin; those results are omitted from customer exports. Sample registration pre-fills the next case code and permits a unique manually assigned code.
+
+## Public testing deployment on Render
+
+The repository includes a Render Blueprint in `render.yaml`. Push this project to a GitHub or GitLab repository, then in Render choose **New > Blueprint**, connect the repository, and apply the blueprint. Render will create a public HTTPS web service and a PostgreSQL database. The free plans are intended for evaluation; expect slower cold starts and limited persistence/availability. Review Render's current plan and database retention details before entering any real data.
+
+After the first deploy, set `SITE_BASE_URL` in the Render service environment to the exact HTTPS URL shown for the web service, then redeploy. Open `/admin/` and create the initial manager account from the Render Shell with `python manage.py createsuperuser`. Configure Gmail variables (`EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, and optionally `DEFAULT_FROM_EMAIL`) in the Render environment if outbound email is needed. Configure the WhatsApp variables there only after the Meta Cloud API sender and approved template are ready. Never commit credentials or a production `.env` file.
+
+Use fictional customers, sample details, and results for international testing. The starter blueprint does not attach durable media storage: uploaded signatures/files may disappear when the service restarts or redeploys. Configure persistent or object storage before relying on uploaded media. The free test deployment is not a production setup for identifiable laboratory/customer data.
