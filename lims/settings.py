@@ -199,6 +199,23 @@ LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
 
+# Render's access log shows the response code, but Django's default production
+# handler emails request tracebacks to ADMINS (which is empty in this project).
+# Send those tracebacks to stdout so runtime errors are visible in Render logs.
+if not DEBUG:
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "handlers": {"console": {"class": "logging.StreamHandler"}},
+        "loggers": {
+            "django.request": {
+                "handlers": ["console"],
+                "level": "ERROR",
+                "propagate": False,
+            },
+        },
+    }
+
 _email_host_user = os.getenv("EMAIL_HOST_USER", "")
 EMAIL_BACKEND = os.getenv(
     "EMAIL_BACKEND",
