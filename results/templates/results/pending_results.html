@@ -8,254 +8,244 @@
 
 <div class="container-fluid">
 
-    <!-- PAGE HEADER -->
 
-    <div class="d-flex flex-column flex-md-row
-                justify-content-between
-                align-items-md-center
-                mb-4">
+<!-- Page Header -->
 
-        <div>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
 
-            <h2 class="fw-bold mb-1">
-                {{ laboratory_display }}
-            </h2>
+    <div>
 
-            <p class="text-muted mb-0">
-                Pending laboratory results
+        <h2 class="fw-bold mb-1">
+            {{ laboratory_display }}
+        </h2>
+
+        <p class="text-muted mb-0">
+            Pending laboratory results
+        </p>
+
+    </div>
+
+    <div class="mt-3 mt-md-0">
+
+        <a href="{% url 'laboratory_results_dashboard' %}"
+           class="btn btn-outline-secondary">
+
+            <i class="fas fa-arrow-left me-1"></i>
+            Laboratory Results
+
+        </a>
+
+    </div>
+
+</div>
+
+
+{% if assay_orders %}
+
+    {% regroup assay_orders by assay as assay_groups %}
+
+
+    <!-- Assay Groups -->
+
+    {% for group in assay_groups %}
+
+        <div class="card border-0 shadow-sm mb-4">
+
+            <!-- Assay Header -->
+
+            <div class="card-header bg-white border-bottom">
+
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <div>
+
+                        <h5 class="fw-bold mb-1">
+                            {{ group.grouper.name }}
+                        </h5>
+
+                        <small class="text-muted">
+                            {{ group.grouper.get_category_display }}
+                        </small>
+
+                    </div>
+
+
+                    <div class="d-flex align-items-center gap-2">
+
+                        <span class="badge text-bg-warning">
+
+                            {{ group.list|length }}
+                            Pending
+
+                        </span>
+
+
+                        <!-- IMPORTANT: This is the navigation
+                             to the assay-specific page -->
+
+                        <a href="{% url 'pending_assay_results' group.grouper.laboratory_section group.grouper.pk %}"
+                           class="btn btn-primary btn-sm">
+
+                            <i class="fas fa-flask me-1"></i>
+                            Enter Results
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Pending Samples Preview -->
+
+            <div class="card-body p-0">
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead class="table-light">
+
+                            <tr>
+
+                                <th>
+                                    Case Code
+                                </th>
+
+                                <th>
+                                    Sample Type
+                                </th>
+
+                                <th>
+                                    Farm
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for order in group.list %}
+
+                                <tr>
+
+                                    <td>
+
+                                        <a href="{% url 'assay_order_detail' order.pk %}"
+                                           class="fw-bold text-decoration-none">
+
+                                            {{ order.sample.case_code }}
+
+                                        </a>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {{ order.sample.get_sample_type_full_display }}{% if order.doc_subtype %}<br><strong>Result for:</strong> {{ order.get_doc_subtype_display }}{% endif %}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {% if order.sample.farm %}
+
+                                            {{ order.sample.farm.name }}
+
+                                        {% else %}
+
+                                            <span class="text-muted">
+                                                —
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {% if order.status == "PENDING" %}
+
+                                            <span class="badge text-bg-warning">
+                                                Pending
+                                            </span>
+
+                                        {% elif order.status == "IN_PROGRESS" %}
+
+                                            <span class="badge text-bg-info">
+                                                In Progress
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="badge text-bg-secondary">
+                                                {{ order.get_status_display }}
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    {% endfor %}
+
+
+{% else %}
+
+    <!-- No Pending Results -->
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body text-center py-5">
+
+            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+
+            <h5 class="fw-bold">
+                No Pending Results
+            </h5>
+
+            <p class="text-muted mb-3">
+                All {{ laboratory_display }} assays have been completed.
             </p>
+
+            <a href="{% url 'laboratory_results_dashboard' %}"
+               class="btn btn-primary">
+
+                <i class="fas fa-arrow-left me-1"></i>
+                Back to Laboratory Results
+
+            </a>
 
         </div>
 
     </div>
 
+{% endif %}
 
-    <!-- PENDING RESULTS -->
-
-    {% regroup assay_orders by assay as assay_groups %}
-
-
-    {% if assay_groups %}
-
-        {% for group in assay_groups %}
-
-            <div class="card border-0 shadow-sm mb-4">
-
-                <div class="card-header bg-white border-bottom">
-
-                    <div class="d-flex
-                                justify-content-between
-                                align-items-center">
-
-                        <div>
-
-                            <h5 class="fw-bold mb-1">
-
-                                <a href="{% url 'pending_assay_results' laboratory=laboratory assay_pk=group.grouper.pk %}"
-                                   class="text-decoration-none">
-
-                                    {{ group.grouper.name }}
-
-                                </a>
-
-                            </h5>
-
-                            <small class="text-muted">
-                                Pending {{ group.grouper.name }} results
-                            </small>
-
-                        </div>
-
-                        <span class="badge text-bg-warning">
-
-                            {{ group.list|length }}
-
-                            pending
-
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <div class="card-body p-0">
-
-                    <div class="table-responsive">
-
-                        <table class="table
-                                      table-hover
-                                      align-middle
-                                      mb-0">
-
-                            <thead class="table-light">
-
-                                <tr>
-
-                                    <th>
-                                        Case Code
-                                    </th>
-
-                                    <th>
-                                        Sample Type
-                                    </th>
-
-                                    <th>
-                                        Customer
-                                    </th>
-
-                                    <th>
-                                        Farm
-                                    </th>
-
-                                    <th>
-                                        Status
-                                    </th>
-
-                                    <th class="text-end">
-                                        Action
-                                    </th>
-
-                                </tr>
-
-                            </thead>
-
-                            <tbody>
-
-                                {% for order in group.list %}
-
-                                    <tr>
-
-                                        <td>
-
-                                            <strong class="text-primary">
-
-                                                {{ order.sample.case_code }}
-
-                                            </strong>
-
-                                        </td>
-
-
-                                        <td>
-
-                                            {{ order.sample.get_sample_type_display }}
-
-                                        </td>
-
-
-                                        <td>
-
-                                            {% if order.sample.farm.customer %}
-
-                                                {{ order.sample.farm.customer.name }}
-
-                                            {% else %}
-
-                                                —
-
-                                            {% endif %}
-
-                                        </td>
-
-
-                                        <td>
-
-                                            {% if order.sample.farm %}
-
-                                                {{ order.sample.farm.name }}
-
-                                            {% else %}
-
-                                                —
-
-                                            {% endif %}
-
-                                        </td>
-
-
-                                        <td>
-
-                                            {% if order.status == "PENDING" %}
-
-                                                <span class="badge text-bg-warning">
-                                                    Pending
-                                                </span>
-
-                                            {% elif order.status == "IN_PROGRESS" %}
-
-                                                <span class="badge text-bg-info">
-                                                    In Progress
-                                                </span>
-
-                                            {% else %}
-
-                                                <span class="badge text-bg-secondary">
-                                                    {{ order.get_status_display }}
-                                                </span>
-
-                                            {% endif %}
-
-                                        </td>
-
-
-                                        <td class="text-end">
-
-                                            <a href="{% url 'assay_result_create' order.pk %}"
-                                               class="btn btn-sm btn-primary">
-
-                                                <i class="fas fa-flask me-1"></i>
-
-                                                Enter Result
-
-                                            </a>
-
-                                        </td>
-
-                                    </tr>
-
-                                {% endfor %}
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        {% endfor %}
-
-
-    {% else %}
-
-        <div class="card border-0 shadow-sm">
-
-            <div class="card-body text-center py-5">
-
-                <i class="fas fa-check-circle
-                          fa-3x
-                          text-success
-                          mb-3"></i>
-
-                <h5 class="fw-bold">
-                    No Pending Results
-                </h5>
-
-                <p class="text-muted mb-0">
-
-                    There are currently no pending
-                    results for {{ laboratory_display }}.
-
-                </p>
-
-            </div>
-
-        </div>
-
-    {% endif %}
 
 </div>
 

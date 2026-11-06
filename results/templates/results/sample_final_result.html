@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Final Laboratory Report — {{ sample.case_code }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .report-page { max-width: 980px; margin: 0 auto; }
+    .report-sheet { background: #fff; border: 1px solid #d9e0e8; box-shadow: 0 4px 18px #18324b12; }
+    .report-lab-title { color: #19334d; letter-spacing: .02em; }
+    @media print {
+        .report-editor, .report-toolbar, .app-sidebar, .app-header, .app-footer { display: none !important; }
+        .app-wrapper, .app-main, .app-content, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
+        .report-page { max-width: none; }
+        .report-sheet { border: 0; box-shadow: none; }
+        .report-section { break-inside: avoid; }
+        a { color: inherit !important; text-decoration: none !important; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-page">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 report-toolbar">
+        <a href="{% if laboratory %}{% url 'completed_results' laboratory=laboratory %}{% else %}{% url 'laboratory_results_dashboard' %}{% endif %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to results
+        </a>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-danger" href="{% url 'sample_report_pdf' sample.pk %}"><i class="fas fa-file-pdf me-1"></i>Save PDF</a>
+            <a class="btn btn-outline-primary" href="{% url 'sample_report_docx' sample.pk %}"><i class="fas fa-file-word me-1"></i>Save DOCX</a>
+            <button class="btn btn-primary" type="button" onclick="window.print()"><i class="fas fa-print me-1"></i>Print</button>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4 report-editor">
+        <div class="card-header bg-white">
+            <h5 class="fw-bold mb-0">Report narrative</h5>
+            <small class="text-muted">Add diagnoses and comments before printing or downloading.</small>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-4"><label class="form-label" for="id_carcass_count">{{ report_form.carcass_count.label }}</label>{{ report_form.carcass_count }}{{ report_form.carcass_count.errors }}</div>
+                    <div class="col-12">
+                        <label class="form-label">Pathologies observed</label>
+                        <div class="table-responsive"><table class="table table-sm align-middle"><thead><tr><th>Pathology</th><th style="width: 220px">Carcasses affected</th></tr></thead><tbody>
+                        {% for finding, count in pathology_options %}<tr><td>{{ finding.name }}</td><td><input class="form-control" type="number" name="pathology_{{ finding.pk }}" value="{{ count|default_if_none:'' }}" min="0" max="{{ report_form.carcass_count.value|default:'' }}" placeholder="0"></td></tr>{% endfor %}
+                        </tbody></table></div>
+                        <small class="text-muted">Leave a count at 0 if the pathology was not seen. Counts cannot exceed the total carcasses examined.</small>
+                    </div>
+                    {% if pathology_errors %}<div class="col-12"><div class="alert alert-danger mb-0"><ul class="mb-0">{% for error in pathology_errors %}<li>{{ error }}</li>{% endfor %}</ul></div></div>{% endif %}
+                    <div class="col-12">
+                        <label class="form-label">Add pathology</label>
+                        <div id="new-pathology-rows">
+                            {% for name, count in new_pathology_rows %}<div class="row g-2 mb-2 new-pathology-row"><div class="col-md-7"><input class="form-control" name="new_pathology_name" maxlength="120" value="{{ name }}" placeholder="Pathology name"></div><div class="col-md-3"><input class="form-control" type="number" name="new_pathology_count" min="1" value="{{ count }}" placeholder="Affected carcasses"></div><div class="col-md-2"><button type="button" class="btn btn-outline-danger remove-pathology" aria-label="Remove pathology">Remove</button></div></div>{% endfor %}
+                        </div>
+                        <button type="button" id="add-pathology" class="btn btn-sm btn-outline-primary">Add another pathology</button>
+                    </div>
+                    <div class="col-md-6"><label class="form-label" for="id_clinical_diagnosis">Clinical diagnosis</label>{{ report_form.clinical_diagnosis }}{{ report_form.clinical_diagnosis.errors }}</div>
+                    <div class="col-md-6"><label class="form-label" for="id_laboratory_diagnosis">Laboratory diagnosis</label>{{ report_form.laboratory_diagnosis }}{{ report_form.laboratory_diagnosis.errors }}</div>
+                    <div class="col-12"><label class="form-label" for="id_isolate">Isolate</label>{{ report_form.isolate }}{{ report_form.isolate.errors }}</div>
+                    <div class="col-12"><label class="form-label" for="id_comments_recommendations">Comments and recommendations</label>{{ report_form.comments_recommendations }}{{ report_form.comments_recommendations.errors }}</div>
+                </div>
+                <div class="text-end mt-3"><button class="btn btn-success" type="submit"><i class="fas fa-save me-1"></i>Save report narrative</button></div>
+            </form>
+            <div class="d-flex flex-wrap gap-2 mt-3 pt-3 border-top">
+                <form method="post" action="{% url 'sample_report_send' sample.pk 'email' %}">{% csrf_token %}<button class="btn btn-outline-success" type="submit"{% if not email_delivery_ready %} disabled{% endif %}><i class="fas fa-envelope me-1"></i>Email result to customer</button></form>
+                <form method="post" action="{% url 'sample_report_send' sample.pk 'whatsapp' %}">{% csrf_token %}<button class="btn btn-outline-success" type="submit"{% if not whatsapp_delivery_ready %} disabled{% endif %}><i class="fab fa-whatsapp me-1"></i>Send result by WhatsApp</button></form>
+            </div>
+            {% if not email_delivery_ready %}<div class="small text-warning mt-2">{{ email_delivery_message }}</div>{% endif %}
+            {% if not whatsapp_delivery_ready %}<div class="small text-warning mt-1">{{ whatsapp_delivery_message }}</div>{% endif %}
+        </div>
+    </div>
+
+    <article class="report-sheet rounded p-4 p-lg-5">
+        <header class="text-center border-bottom pb-3 mb-4">
+            <h2 class="h4 fw-bold report-lab-title mb-1">KADUNA POULTRY DISEASE DIAGNOSTIC LABORATORY</h2>
+            <div>NO. 1, KUBANI CRESCENT, BARNAWA, KADUNA</div>
+            <div>kadunapoultrylab@gmail.com</div>
+        </header>
+
+        <div class="row g-2 border rounded p-3 mb-4">
+            <div class="col-md-7"><strong>CLIENT:</strong> {{ sample.farm.customer.name|default:"—" }}{% if sample.farm %} — {{ sample.farm.name }}{% endif %}</div>
+            <div class="col-md-5 text-md-end">{{ sample.received_date|date:"F d, Y" }}</div>
+            <div class="col-md-7"><strong>Case No:</strong> {{ sample.case_code }}</div>
+            <div class="col-md-5"><strong>Sample:</strong> {{ sample.get_sample_type_full_display }}</div>
+        </div>
+
+        <p>Dear Sir/Ma,</p>
+        <p>Find below the results of laboratory analysis carried out on the sample submitted for investigation.</p>
+
+        {% if sample.age or sample.breed_species or sample.source_of_birds or sample.feed_type or sample.population or sample.source_of_water or sample.housing or sample.major_complaint or sample.mortality_pattern or sample.medication or sample.vaccination_history or sample.drugs or sample.vaccination or sample.last_vaccination %}
+        <section class="report-section mb-4">
+            <h3 class="h5 fw-bold">Flock and Clinical History</h3>
+            <div class="row g-2">
+                {% if sample.age %}<div class="col-md-6"><strong>Age:</strong> {{ sample.age }}</div>{% endif %}
+                {% if sample.breed_species %}<div class="col-md-6"><strong>Breed/Species:</strong> {{ sample.breed_species }}</div>{% endif %}
+                {% if sample.source_of_birds %}<div class="col-md-6"><strong>Source of birds:</strong> {{ sample.source_of_birds }}</div>{% endif %}
+                {% if sample.feed_type %}<div class="col-md-6"><strong>Feed:</strong> {{ sample.feed_type }}</div>{% endif %}
+                {% if sample.population %}<div class="col-md-6"><strong>Population:</strong> {{ sample.population }}</div>{% endif %}
+                {% if sample.source_of_water %}<div class="col-md-6"><strong>Water source:</strong> {{ sample.source_of_water }}</div>{% endif %}
+                {% if sample.housing %}<div class="col-md-6"><strong>Housing:</strong> {{ sample.housing }}</div>{% endif %}
+                {% if sample.major_complaint %}<div class="col-12"><strong>Major complaint:</strong> {{ sample.major_complaint|linebreaksbr }}</div>{% endif %}
+                {% if sample.mortality_pattern %}<div class="col-md-6"><strong>Mortality pattern:</strong> {{ sample.mortality_pattern }}</div>{% endif %}
+                {% if sample.medication %}<div class="col-md-6"><strong>Medication:</strong> {{ sample.medication|linebreaksbr }}</div>{% endif %}
+                {% if sample.vaccination_history %}<div class="col-md-6"><strong>Vaccination history:</strong> {{ sample.vaccination_history|linebreaksbr }}</div>{% endif %}
+                {% if sample.drugs %}<div class="col-md-6"><strong>Drugs:</strong> {{ sample.drugs|linebreaksbr }}</div>{% endif %}
+                {% if sample.vaccination %}<div class="col-md-6"><strong>Vaccination:</strong> {{ sample.vaccination|linebreaksbr }}</div>{% endif %}
+                {% if sample.last_vaccination %}<div class="col-md-6"><strong>Last vaccination date:</strong> {{ sample.last_vaccination }}</div>{% endif %}
+            </div>
+        </section>
+        {% endif %}
+
+        {% if report.carcass_count %}<section class="report-section mb-4"><h3 class="h5 fw-bold">Necropsy Findings</h3>
+            {% if report.carcass_count %}<p><strong>Number of carcasses examined:</strong> {{ report.carcass_count }}</p>{% if report.pathology_findings.all %}<ul>{% for item in report.pathology_findings.all %}<li>{{ item.finding.name }} ({{ item.carcass_count }}/{{ report.carcass_count }})</li>{% endfor %}</ul>{% else %}<p>No gross pathologies recorded.</p>{% endif %}
+            {% endif %}
+        </section>{% endif %}
+        {% if report.clinical_diagnosis %}<section class="report-section mb-4"><h3 class="h5 fw-bold">Clinical Diagnosis</h3><p>{{ report.clinical_diagnosis|linebreaksbr }}</p></section>{% endif %}
+        {% if report.laboratory_diagnosis %}<section class="report-section mb-4"><h3 class="h5 fw-bold">Laboratory Diagnosis</h3><p>{{ report.laboratory_diagnosis|linebreaksbr }}</p></section>{% endif %}
+        {% if report.isolate %}<section class="report-section mb-4"><h3 class="h5 fw-bold">Isolate</h3><p>{{ report.isolate }}</p></section>{% endif %}
+
+        {% for order in assay_orders %}
+            <section class="report-section mb-4">
+                <h3 class="h5 fw-bold">{{ order.assay.name }}{% if order.doc_subtype %} — {{ order.get_doc_subtype_display }}{% endif %}</h3>
+                {% if order.result.binary_result %}<p><strong>Result:</strong> {{ order.result.binary_result.get_result_display }}</p>
+                {% elif order.result.gram_result %}<p><strong>Result:</strong> {{ order.result.gram_result.get_result_display }}</p>
+                {% elif order.result.tsi_result %}<p><strong>Result:</strong> {{ order.result.tsi_result.get_result_display }}</p>
+                {% elif order.result.count_result %}<p><strong>Count:</strong> {{ order.result.count_result.count }} {{ order.result.count_result.unit }}</p>
+                {% elif order.result.culture_result %}
+                    <p><strong>Growth:</strong> {{ order.result.culture_result.get_growth_display }}</p>
+                    {% if order.result.culture_result.organism_name %}<p><strong>Organism identified:</strong> {{ order.result.culture_result.organism_name }}</p>{% endif %}
+                    {% if order.result.culture_result.colony_description %}<p><strong>Colony description:</strong> {{ order.result.culture_result.colony_description|linebreaksbr }}</p>{% endif %}
+                    {% if order.result.culture_result.identification_notes %}<p><strong>Identification notes:</strong> {{ order.result.culture_result.identification_notes|linebreaksbr }}</p>{% endif %}
+                {% elif order.result.ast_result %}
+                    <div class="table-responsive"><table class="table table-sm table-bordered"><thead class="table-light"><tr><th>Antimicrobial</th><th>Interpretation</th></tr></thead><tbody>{% for item in order.result.ast_result.items.all %}<tr><td>{{ item.antibiotic.name }}</td><td>{{ item.get_interpretation_display }}</td></tr>{% empty %}<tr><td colspan="2">No antimicrobial results entered.</td></tr>{% endfor %}</tbody></table></div>
+                {% elif order.result.ndhi_result %}<p>{{ order.result.ndhi_result.result|linebreaksbr }}</p>
+                {% elif order.result.pcr_result %}<p><strong>Target:</strong> {{ order.result.pcr_result.target }}<br><strong>Result:</strong> {{ order.result.pcr_result.result }}{% if order.result.pcr_result.cq_ct %}<br><strong>Cq / Ct:</strong> {{ order.result.pcr_result.cq_ct }}{% endif %}{% if order.result.pcr_result.interpretation %}<br><strong>Interpretation:</strong> {{ order.result.pcr_result.interpretation }}{% endif %}</p>
+                {% endif %}
+                {% if order.result.remarks %}<p><strong>Remarks:</strong> {{ order.result.remarks|linebreaksbr }}</p>{% endif %}
+            </section>
+        {% empty %}
+            <p class="text-muted">No completed assay results are available for this sample.</p>
+        {% endfor %}
+
+        {% if report.comments_recommendations %}<section class="report-section mb-5"><h3 class="h5 fw-bold">Comments and Recommendations</h3><div>{{ report.comments_recommendations|linebreaksbr }}</div></section>{% endif %}
+
+        <footer class="mt-5 pt-3">
+            <p>Yours faithfully,</p>
+            <div class="mt-3 text-start">
+                {% if exporting_signature_url %}<img src="{{ exporting_signature_url }}" alt="{{ exporting_user_name }} signature" style="max-width: 220px; max-height: 90px; display: block; object-fit: contain; object-position: left;">
+                {% else %}<div style="width: 220px; border-bottom: 1px solid #333; height: 52px;"></div>{% endif %}
+                <div class="fw-semibold mt-1">{{ exporting_user_name }}</div>
+                <div>Authorized Laboratory Officer</div>
+            </div>
+        </footer>
+    </article>
+</div>
+<script>
+(() => {
+    const rows = document.getElementById("new-pathology-rows");
+    document.getElementById("add-pathology")?.addEventListener("click", () => {
+        const clone = rows.querySelector(".new-pathology-row").cloneNode(true);
+        clone.querySelectorAll("input").forEach(input => input.value = "");
+        rows.appendChild(clone);
+    });
+    rows?.addEventListener("click", event => {
+        if (!event.target.classList.contains("remove-pathology")) return;
+        const current = rows.querySelectorAll(".new-pathology-row");
+        if (current.length > 1) event.target.closest(".new-pathology-row").remove();
+        else current[0].querySelectorAll("input").forEach(input => input.value = "");
+    });
+})();
+</script>
+{% endblock %}

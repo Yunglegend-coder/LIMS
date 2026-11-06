@@ -9,7 +9,8 @@ from .models import (
     InstrumentResult,
     CountResult,
     FungalCultureResult,
-    Antibiotic
+    Antibiotic,
+    PathologyFinding,
 )
 
 class ASTResultItemInline(admin.TabularInline):
@@ -161,6 +162,13 @@ class AntibioticAdmin(admin.ModelAdmin):
     ordering = (
         "code",
     )
+
+
+@admin.register(PathologyFinding)
+class PathologyFindingAdmin(admin.ModelAdmin):
+    list_display = ("name", "is_active")
+    list_filter = ("is_active",)
+    search_fields = ("name",)
 
 @admin.register(ASTResultItem)
 class ASTResultItemAdmin(admin.ModelAdmin):

@@ -12,11 +12,7 @@ class SampleType(models.TextChoices):
 
     SERUM = "SERUM", "Serum"
 
-    DOC_TISSUE = "DOC_TISSUE", "DOC Tissue"
-
-    DOC_INTESTINE = "DOC_INTESTINE", "DOC Intestine"
-
-    DOC_YOLK_SAC = "DOC_YOLK_SAC", "DOC Yolk Sac"
+    DOC = "DOC", "DOC"
 
     WATER = "WATER", "Water"
 
@@ -33,6 +29,12 @@ class SampleType(models.TextChoices):
     HYGIENE_AUDIT = "HYGIENE_AUDIT", "Hygiene Audit"
 
     EGG = "EGG", "Egg"
+
+
+class DocSubtype(models.TextChoices):
+    TISSUE = "DOC_TISSUE", "DOC/Tissue"
+    YOLK_SAC = "DOC_YOLK_SAC", "DOC/Yolk Sac"
+    INTESTINE = "DOC_INTESTINE", "DOC/Intestine"
 
 class SampleCondition(models.TextChoices):
     GOOD = "GOOD", "Good"

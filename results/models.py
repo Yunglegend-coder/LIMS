@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models
 
 from assays.models import AssayOrder
+from samples.models import Sample
 
 
 class AssayResult(models.Model):
@@ -40,6 +41,73 @@ class AssayResult(models.Model):
             f"{self.assay_order.sample.case_code} - "
             f"{self.assay_order.assay.name}"
         )
+
+
+class SampleReport(models.Model):
+    """Editable narrative fields included in a sample's final report."""
+
+    sample = models.OneToOneField(
+        Sample,
+        on_delete=models.CASCADE,
+        related_name="report",
+    )
+    clinical_diagnosis = models.TextField(blank=True)
+    laboratory_diagnosis = models.TextField(blank=True)
+    isolate = models.CharField(max_length=200, blank=True)
+    comments_recommendations = models.TextField(blank=True)
+    carcass_count = models.PositiveSmallIntegerField(null=True, blank=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="updated_sample_reports",
+        null=True,
+        blank=True,
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Report narrative - {self.sample.case_code}"
+
+
+class PathologyFinding(models.Model):
+    name = models.CharField(max_length=120, unique=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
+class SampleReportFinding(models.Model):
+    sample_report = models.ForeignKey(
+        SampleReport,
+        on_delete=models.CASCADE,
+        related_name="pathology_findings",
+    )
+    finding = models.ForeignKey(
+        PathologyFinding,
+        on_delete=models.PROTECT,
+        related_name="sample_findings",
+    )
+    carcass_count = models.PositiveSmallIntegerField()
+
+    class Meta:
+        ordering = ["finding__name"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["sample_report", "finding"],
+                name="unique_pathology_per_sample_report",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(carcass_count__gte=1),
+                name="sample_report_finding_count_positive",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.finding}: {self.carcass_count} carcass(es)"
 
 
 # ============================================================

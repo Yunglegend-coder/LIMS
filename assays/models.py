@@ -1,5 +1,6 @@
 from django.db import models
-from samples.models import SampleType, Sample
+from django.core.exceptions import ValidationError
+from samples.models import SampleType, DocSubtype, Sample
 
 
 
@@ -42,6 +43,16 @@ class AssayType(models.Model):
         default=AssayCategory.BINARY,
     )
 
+    is_biochemical = models.BooleanField(
+        default=False,
+        help_text="Exclude biochemical identification tests from customer PDF/DOCX reports.",
+    )
+
+    is_client_visible = models.BooleanField(
+        default=True,
+        help_text="Show completed results for this assay in client-facing reports.",
+    )
+
     laboratory_section = models.CharField(
         max_length=10,
         choices=LaboratorySection.choices,
@@ -67,12 +78,32 @@ class SampleTypeAssay(models.Model):
         related_name="sample_types",
     )
 
+    doc_subtype = models.CharField(
+        max_length=30,
+        choices=DocSubtype.choices,
+        blank=True,
+        help_text="Set this only for a DOC subtype specific assay mapping.",
+    )
+
     class Meta:
-        unique_together = ("sample_type", "assay")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("sample_type", "doc_subtype", "assay"),
+                name="unique_sample_type_subtype_assay",
+            ),
+        ]
         ordering = ["sample_type", "assay__name"]
 
+    def clean(self):
+        super().clean()
+        if self.sample_type != SampleType.DOC and self.doc_subtype:
+            raise ValidationError({"doc_subtype": "DOC subtype can only be set for DOC mappings."})
+
     def __str__(self):
-        return f"{self.get_sample_type_display()} → {self.assay.name}"
+        label = self.get_sample_type_display()
+        if self.doc_subtype:
+            label = dict(DocSubtype.choices).get(self.doc_subtype, self.doc_subtype)
+        return f"{label} → {self.assay.name}"
 
 
 class AssayStatus(models.TextChoices):
@@ -93,6 +124,13 @@ class AssayOrder(models.Model):
         AssayType,
         on_delete=models.PROTECT,
         related_name="orders",
+    )
+
+    doc_subtype = models.CharField(
+        max_length=30,
+        choices=DocSubtype.choices,
+        blank=True,
+        help_text="Identifies which DOC material this assay order is for.",
     )
 
     status = models.CharField(
@@ -121,10 +159,16 @@ class AssayOrder(models.Model):
         ordering = ["sample", "assay"]
         constraints = [
             models.UniqueConstraint(
-                fields=["sample", "assay"],
-                name="unique_sample_assay",
+                fields=["sample", "assay", "doc_subtype"],
+                name="unique_sample_assay_subtype",
             )
         ]
 
+    def clean(self):
+        super().clean()
+        if self.sample_id and self.sample.sample_type != SampleType.DOC and self.doc_subtype:
+            raise ValidationError({"doc_subtype": "DOC subtype can only be set for DOC assay orders."})
+
     def __str__(self):
-        return f"{self.sample.case_code} - {self.assay.name}"
+        subtype = f" - {self.get_doc_subtype_display()}" if self.doc_subtype else ""
+        return f"{self.sample.case_code} - {self.assay.name}{subtype}"

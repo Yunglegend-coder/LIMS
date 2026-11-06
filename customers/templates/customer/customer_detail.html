@@ -36,9 +36,15 @@ Customer Information
 
 <tr>
 
-<th>Farm</th>
+<th>Farms</th>
 
-<td>{{ customer.farm_name }}</td>
+<td>
+{% for farm in customer.farms.all %}
+    {{ farm.name }}{% if not forloop.last %}, {% endif %}
+{% empty %}
+    —
+{% endfor %}
+</td>
 
 </tr>
 

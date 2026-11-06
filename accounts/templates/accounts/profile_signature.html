@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}My report signature | Poultry Diagnostic LIMS{% endblock %}
+{% block content %}
+<div class="container-fluid" style="max-width:760px">
+  <div class="mb-4"><h1 class="h3 mb-1">My report signature</h1><p class="text-muted mb-0">Your saved signature is included when you export or email a final laboratory report.</p></div>
+  <div class="card">
+    <div class="card-body">
+      {% if request.user.profile.signature %}
+        <div class="mb-3"><div class="form-label">Current signature</div><img src="{{ request.user.profile.signature.url }}" alt="Your saved signature" style="max-width:320px;max-height:120px;object-fit:contain" class="border rounded p-2"></div>
+        <div class="form-check mb-3"><input class="form-check-input" type="checkbox" name="signature-clear" id="signature-clear"><label class="form-check-label" for="signature-clear">Remove my saved signature</label></div>
+      {% endif %}
+      <form method="post" enctype="multipart/form-data">{% csrf_token %}
+        <label class="form-label" for="id_signature">Upload a signature image</label>
+        <input class="form-control" type="file" name="signature" id="id_signature" accept="image/png,image/jpeg">
+        <div class="form-text">PNG or JPG. Use a clear image of your signature on a plain background.</div>
+        {% if form.signature.errors %}<div class="text-danger small mt-2">{{ form.signature.errors }}</div>{% endif %}
+        <div class="d-flex gap-2 mt-4"><button type="submit" class="btn btn-primary">Save signature</button><a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Back</a></div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

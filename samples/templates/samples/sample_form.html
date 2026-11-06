@@ -22,6 +22,7 @@ Register Sample
         </p>
     </div>
 
+    {% if request.user.profile.role != "RECEPTIONIST" %}
     <div class="mt-3 mt-md-0">
 
         <a href="{% url 'sample_list' %}"
@@ -33,6 +34,7 @@ Register Sample
         </a>
 
     </div>
+    {% endif %}
 
 </div>
 
@@ -89,6 +91,14 @@ Register Sample
         <div class="card-body">
 
             <div class="row g-3">
+
+                <!-- Case Code -->
+                <div class="col-md-6">
+                    <label for="{{ form.case_code.id_for_label }}" class="form-label fw-semibold">{{ form.case_code.label }}</label>
+                    {{ form.case_code }}
+                    <div class="form-text">{{ form.case_code.help_text }}</div>
+                    {% if form.case_code.errors %}<div class="text-danger small mt-1">{{ form.case_code.errors }}</div>{% endif %}
+                </div>
 
 
                 <!-- Farm -->
@@ -174,6 +184,14 @@ Register Sample
 
                 </div>
 
+                <!-- DOC Subtype -->
+                <div class="col-md-6" id="doc_subtypes-wrapper" hidden>
+                    <label class="form-label fw-semibold">{{ form.doc_subtypes.label }}</label>
+                    <div class="d-flex flex-wrap gap-3">{% for checkbox in form.doc_subtypes %}<div class="form-check">{{ checkbox.tag }}<label class="form-check-label ms-1" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label></div>{% endfor %}</div>
+                    <small class="form-text text-muted">A DOC case includes tissue, yolk sac, and intestine. Assays for all three are added to this one case and report.</small>
+                    {% if form.doc_subtypes.errors %}<div class="text-danger small mt-1">{{ form.doc_subtypes.errors }}</div>{% endif %}
+                </div>
+
 
                 <!-- Condition -->
                 <div class="col-md-6">
@@ -244,7 +262,7 @@ Register Sample
     </div>
 
 
-    <!-- Clinical / Sample History -->
+    <!-- Flock and Clinical Details -->
     <div class="card border-0 shadow-sm mb-4">
 
         <div class="card-header bg-white border-bottom">
@@ -258,7 +276,7 @@ Register Sample
                 <div>
 
                     <h5 class="fw-bold mb-0">
-                        Clinical & Sample History
+                        Flock and Clinical Details
                     </h5>
 
                     <small class="text-muted">
@@ -275,171 +293,16 @@ Register Sample
         <div class="card-body">
 
 
-            <!-- History -->
-            <div id="history-wrapper" class="mb-3">
-
-                <label for="{{ form.history.id_for_label }}"
-                       class="form-label fw-semibold">
-
-                    {{ form.history.label }}
-
-                </label>
-
-                {{ form.history }}
-
-                {% if form.history.errors %}
-                    <div class="text-danger small mt-1">
-                        {{ form.history.errors }}
+            <div class="row g-3">
+                {% for field in form %}
+                    {% if field.name in "age breed_species source_of_birds feed_type population source_of_water housing major_complaint mortality_pattern medication vaccination_history drugs vaccination last_vaccination" %}
+                    <div class="col-md-6" id="{{ field.name }}-wrapper">
+                        <label for="{{ field.id_for_label }}" class="form-label fw-semibold">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors }}</div>{% endif %}
                     </div>
-                {% endif %}
-
-            </div>
-
-
-            <!-- Source of Birds -->
-            <div id="source_of_birds-wrapper" class="mb-3">
-
-                <label for="{{ form.source_of_birds.id_for_label }}"
-                       class="form-label fw-semibold">
-
-                    {{ form.source_of_birds.label }}
-
-                </label>
-
-                {{ form.source_of_birds }}
-
-                {% if form.source_of_birds.errors %}
-                    <div class="text-danger small mt-1">
-                        {{ form.source_of_birds.errors }}
-                    </div>
-                {% endif %}
-
-            </div>
-
-
-            <!-- Source of Water -->
-            <div id="source_of_water-wrapper" class="mb-3">
-
-                <label for="{{ form.source_of_water.id_for_label }}"
-                       class="form-label fw-semibold">
-
-                    {{ form.source_of_water.label }}
-
-                </label>
-
-                {{ form.source_of_water }}
-
-                {% if form.source_of_water.errors %}
-                    <div class="text-danger small mt-1">
-                        {{ form.source_of_water.errors }}
-                    </div>
-                {% endif %}
-
-            </div>
-
-
-            <!-- Feed Type -->
-            <div id="feed_type-wrapper" class="mb-3">
-
-                <label for="{{ form.feed_type.id_for_label }}"
-                       class="form-label fw-semibold">
-
-                    {{ form.feed_type.label }}
-
-                </label>
-
-                {{ form.feed_type }}
-
-                {% if form.feed_type.errors %}
-                    <div class="text-danger small mt-1">
-                        {{ form.feed_type.errors }}
-                    </div>
-                {% endif %}
-
-            </div>
-
-
-            <!-- Last Vaccination -->
-            <div id="last_vaccination-wrapper" class="mb-3">
-
-                <label for="{{ form.last_vaccination.id_for_label }}"
-                       class="form-label fw-semibold">
-
-                    {{ form.last_vaccination.label }}
-
-                </label>
-
-                {{ form.last_vaccination }}
-
-                {% if form.last_vaccination.errors %}
-                    <div class="text-danger small mt-1">
-                        {{ form.last_vaccination.errors }}
-                    </div>
-                {% endif %}
-
-            </div>
-
-
-            <!-- Antibiotics -->
-            <div id="antibiotics_used-wrapper" class="mb-3">
-
-                <label for="{{ form.antibiotics_used.id_for_label }}"
-                       class="form-label fw-semibold">
-
-                    {{ form.antibiotics_used.label }}
-
-                </label>
-
-                {{ form.antibiotics_used }}
-
-                {% if form.antibiotics_used.errors %}
-                    <div class="text-danger small mt-1">
-                        {{ form.antibiotics_used.errors }}
-                    </div>
-                {% endif %}
-
-            </div>
-
-
-            <!-- Mortality Pattern -->
-            <div id="mortality_pattern-wrapper" class="mb-3">
-
-                <label for="{{ form.mortality_pattern.id_for_label }}"
-                       class="form-label fw-semibold">
-
-                    {{ form.mortality_pattern.label }}
-
-                </label>
-
-                {{ form.mortality_pattern }}
-
-                {% if form.mortality_pattern.errors %}
-                    <div class="text-danger small mt-1">
-                        {{ form.mortality_pattern.errors }}
-                    </div>
-                {% endif %}
-
-            </div>
-
-
-            <!-- Pathology -->
-            <div id="pathology-wrapper" class="mb-3">
-
-                <label for="{{ form.pathology.id_for_label }}"
-                       class="form-label fw-semibold">
-
-                    {{ form.pathology.label }}
-
-                </label>
-
-                {{ form.pathology }}
-
-                {% if form.pathology.errors %}
-                    <div class="text-danger small mt-1">
-                        {{ form.pathology.errors }}
-                    </div>
-                {% endif %}
-
+                    {% endif %}
+                {% endfor %}
             </div>
 
 
@@ -505,5 +368,17 @@ Register Sample
 
 {% block extra_js %}
 <script src="{% static 'js/sample_admin.js' %}"></script>
-<script src="{% static 'js/sample_visibility.js' %}"></script>
+<script src="{% static 'js/sample_visibility.js' %}?v=3"></script>
+<script>
+(() => {
+    const sampleType = document.getElementById("id_sample_type");
+    const subtypeWrapper = document.getElementById("doc_subtypes-wrapper");
+    if (!sampleType || !subtypeWrapper) return;
+    const updateSubtypeVisibility = () => {
+        subtypeWrapper.hidden = sampleType.value !== "DOC";
+    };
+    sampleType.addEventListener("change", updateSubtypeVisibility);
+    updateSubtypeVisibility();
+})();
+</script>
 {% endblock %}

@@ -39,6 +39,31 @@ New Customer
 
                     {{ form|crispy }}
 
+                    <hr class="my-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="fw-bold mb-1">Farms</h5>
+                            <small class="text-muted">Add or update farms belonging to this customer.</small>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="add-farm-row">Add farm</button>
+                    </div>
+                    {{ farm_formset.management_form }}
+                    {{ farm_formset.non_form_errors }}
+                    <div id="farm-forms">
+                        {% for farm_form in farm_formset %}
+                        <div class="border rounded p-3 mb-3 farm-form-row">
+                            {{ farm_form.id }}
+                            <div class="row g-3">
+                                <div class="col-md-4"><label class="form-label">Farm name</label>{{ farm_form.name }}{{ farm_form.name.errors }}</div>
+                                <div class="col-md-3"><label class="form-label">State</label>{{ farm_form.state }}{{ farm_form.state.errors }}</div>
+                                <div class="col-md-5"><label class="form-label">Address</label>{{ farm_form.address }}{{ farm_form.address.errors }}</div>
+                            </div>
+                            {% if farm_form.DELETE %}<div class="form-check mt-2">{{ farm_form.DELETE }}<label class="form-check-label">Remove this farm</label><button type="button" class="btn btn-sm btn-outline-danger ms-2 remove-farm-row">Remove row</button></div>{% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <template id="empty-farm-form">{{ farm_formset.empty_form.id }}<div class="border rounded p-3 mb-3 farm-form-row"><div class="row g-3"><div class="col-md-4"><label class="form-label">Farm name</label>{{ farm_formset.empty_form.name }}</div><div class="col-md-3"><label class="form-label">State</label>{{ farm_formset.empty_form.state }}</div><div class="col-md-5"><label class="form-label">Address</label>{{ farm_formset.empty_form.address }}</div></div><div class="form-check mt-2">{{ farm_formset.empty_form.DELETE }}<button type="button" class="btn btn-sm btn-outline-danger ms-2 remove-farm-row">Remove row</button></div></div></template>
+
                 </div>
 
                 <div class="card-footer">
@@ -65,4 +90,25 @@ New Customer
     </div>
 </div>
 
+<script>
+(() => {
+    const container = document.getElementById("farm-forms");
+    const addButton = document.getElementById("add-farm-row");
+    const totalForms = document.getElementById("id_farms-TOTAL_FORMS");
+    const template = document.getElementById("empty-farm-form");
+    addButton?.addEventListener("click", () => {
+        const index = Number(totalForms.value);
+        const html = template.innerHTML.replaceAll("__prefix__", index);
+        container.insertAdjacentHTML("beforeend", html);
+        totalForms.value = index + 1;
+    });
+    container?.addEventListener("click", event => {
+        if (!event.target.classList.contains("remove-farm-row")) return;
+        const row = event.target.closest(".farm-form-row");
+        const deleteField = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+        if (deleteField) deleteField.checked = true;
+        row.hidden = true;
+    });
+})();
+</script>
 {% endblock %}

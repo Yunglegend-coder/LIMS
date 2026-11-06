@@ -1,4 +1,4 @@
-from django.db.models import Max
+from django.utils import timezone
 from samples.models import Sample
 
 
@@ -11,19 +11,20 @@ def generate_case_code(lab_code: str) -> str:
     AB26/0001
     """
 
-    year = str(__import__("datetime").date.today().year)[2:]
+    year = str(timezone.localdate().year)[2:]
 
     prefix = f"{lab_code}{year}/"
 
-    latest = (
-        Sample.objects
-        .filter(case_code__startswith=prefix)
-        .aggregate(Max("case_code"))
-    )["case_code__max"]
+    existing_numbers = []
+    for case_code in Sample.objects.filter(
+        case_code__startswith=prefix
+    ).values_list("case_code", flat=True):
+        suffix = case_code[len(prefix):]
+        if suffix.isdigit():
+            existing_numbers.append(int(suffix))
 
-    if latest:
-        number = int(latest.split("/")[1]) + 1
-    else:
-        number = 1
+    number = max(existing_numbers, default=0) + 1
+    while Sample.objects.filter(case_code=f"{prefix}{number:04d}").exists():
+        number += 1
 
     return f"{prefix}{number:04d}"

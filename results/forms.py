@@ -2,7 +2,6 @@ from django import forms
 from django.forms import inlineformset_factory
 
 from .models import (
-    AssayResult,
     BinaryResult,
     GramStainResult,
     ASTResult,
@@ -10,7 +9,8 @@ from .models import (
     NDHIResult,
     PCRResult,
     TSIResult,
-    CultureResult
+    CultureResult,
+    SampleReport,
 )
 
 
@@ -477,3 +477,35 @@ class CultureResultForm(forms.ModelForm):
             )
 
         return culture_result
+
+
+class SampleReportForm(forms.ModelForm):
+    carcass_count = forms.IntegerField(
+        required=False,
+        min_value=1,
+        max_value=1000,
+        label="Number of carcasses examined",
+        widget=forms.NumberInput(attrs={"class": "form-control", "min": 1, "max": 1000}),
+    )
+
+    class Meta:
+        model = SampleReport
+        fields = [
+            "carcass_count",
+            "clinical_diagnosis",
+            "laboratory_diagnosis",
+            "isolate",
+            "comments_recommendations",
+        ]
+        widgets = {
+            "clinical_diagnosis": forms.Textarea(
+                attrs={"class": "form-control", "rows": 2}
+            ),
+            "laboratory_diagnosis": forms.Textarea(
+                attrs={"class": "form-control", "rows": 2}
+            ),
+            "isolate": forms.TextInput(attrs={"class": "form-control"}),
+            "comments_recommendations": forms.Textarea(
+                attrs={"class": "form-control", "rows": 6}
+            ),
+        }

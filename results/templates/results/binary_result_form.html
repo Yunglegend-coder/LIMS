@@ -74,7 +74,7 @@ Enter Result — {{ assay.name }}
                 </small>
 
                 <strong>
-                    {{ sample.get_sample_type_display }}
+                    {{ sample.get_sample_type_full_display }}{% if order.doc_subtype %}<br><strong>Result for:</strong> {{ order.get_doc_subtype_display }}{% endif %}
                 </strong>
 
             </div>

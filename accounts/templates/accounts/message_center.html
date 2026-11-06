@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Staff chat | Poultry Diagnostic LIMS{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div><h1 class="h3 mb-1">Staff chat</h1><p class="text-muted mb-0">Direct messages and lab-wide announcements.</p></div>
+  </div>
+  <div class="row g-3">
+    <div class="col-lg-5">
+      <div class="card card-primary card-outline">
+        <div class="card-header"><h2 class="card-title">Start a direct message</h2></div>
+        <div class="card-body">
+          {% if users %}
+          <form method="post">{% csrf_token %}
+            <label class="form-label" for="recipient">Send to</label>
+            <select class="form-select mb-3" name="recipient" id="recipient" required>
+              {% for person in users %}<option value="{{ person.pk }}">{{ person.get_full_name|default:person.username }} · {{ person.profile.get_role_display|default:"Staff" }}</option>{% endfor %}
+            </select>
+            <label class="form-label" for="direct-body">Message</label>
+            <textarea class="form-control mb-3" id="direct-body" name="body" rows="3" maxlength="4000" required></textarea>
+            <button class="btn btn-primary" type="submit"><i class="fas fa-paper-plane me-1"></i>Send message</button>
+          </form>
+          {% else %}<p class="text-muted mb-0">No other active users are available yet.</p>{% endif %}
+        </div>
+      </div>
+      <div class="card card-success card-outline">
+        <div class="card-header"><h2 class="card-title"><i class="fas fa-phone me-1"></i>Chat and voice call</h2></div>
+        <div class="card-body pb-2"><p class="text-muted">Open a colleague's conversation to message or start an audio call. Both people need to keep that conversation open.</p></div>
+        <div class="list-group list-group-flush">
+          {% for person in users %}
+            <div class="list-group-item d-flex justify-content-between align-items-center gap-2">
+              <span><strong>{{ person.get_full_name|default:person.username }}</strong><small class="d-block text-muted">{{ person.profile.get_role_display|default:"LIMS user" }}</small></span>
+              <a class="btn btn-sm btn-outline-success flex-shrink-0" href="{% url 'direct_message' person.pk %}"><i class="fas fa-phone me-1"></i>Open chat &amp; call</a>
+            </div>
+          {% empty %}<div class="list-group-item text-muted">No other active users are available yet.</div>{% endfor %}
+        </div>
+      </div>
+      <div class="card card-info card-outline">
+        <div class="card-header"><h2 class="card-title">Conversations</h2></div>
+        <div class="list-group list-group-flush">
+          {% for person in recent_conversations %}
+            <a class="list-group-item list-group-item-action" href="{% url 'direct_message' person.pk %}">
+              <div class="d-flex justify-content-between"><strong>{{ person.get_full_name|default:person.username }}</strong><small class="text-muted">{{ person.last_message_at|date:"M j, H:i" }}</small></div>
+              <div class="text-muted text-truncate">{% if person.last_message_sender_id == request.user.pk %}You: {% endif %}{{ person.last_message_body }}</div>
+            </a>
+          {% empty %}<div class="list-group-item text-muted">No direct messages yet.</div>{% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-7">
+      <div class="card card-warning card-outline">
+        <div class="card-header"><h2 class="card-title">General announcement</h2></div>
+        <div class="card-body">
+          <form method="post" action="{% url 'announcement_create' %}">{% csrf_token %}
+            <label class="form-label" for="announcement-body">Visible to every LIMS user</label>
+            <textarea class="form-control mb-3" id="announcement-body" name="body" rows="3" maxlength="4000" placeholder="Share a lab-wide update..." required></textarea>
+            <button class="btn btn-warning" type="submit"><i class="fas fa-bullhorn me-1"></i>Post announcement</button>
+          </form>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h2 class="card-title">Announcements</h2></div>
+        <div class="card-body">
+          {% for announcement in announcements %}
+            <article class="border-bottom pb-3 mb-3">
+              <div class="d-flex justify-content-between gap-2"><strong>{{ announcement.sender.get_full_name|default:announcement.sender.username }}</strong><small class="text-muted">{{ announcement.created_at|date:"M j, Y · H:i" }}</small></div>
+              <p class="mb-0 mt-2" style="white-space: pre-wrap">{{ announcement.body }}</p>
+            </article>
+          {% empty %}<p class="text-muted mb-0">No announcements have been posted.</p>{% endfor %}
+        </div>
+      </div>
+      <div class="alert alert-light border"><i class="fas fa-info-circle me-1"></i>To call, open a colleague's conversation and select <strong>Voice call</strong>. Allow microphone access when your browser asks. Calls require both people to be online in that conversation.</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

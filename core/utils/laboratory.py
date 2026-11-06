@@ -8,11 +8,7 @@ LAB_MAPPING = {
 
     SampleType.CARCASS: Laboratory.MICROBIOLOGY,
 
-    SampleType.DOC_TISSUE: Laboratory.MICROBIOLOGY,
-
-    SampleType.DOC_INTESTINE: Laboratory.MICROBIOLOGY,
-
-    SampleType.DOC_YOLK_SAC: Laboratory.MICROBIOLOGY,
+    SampleType.DOC: Laboratory.MICROBIOLOGY,
 
     SampleType.WATER: Laboratory.MICROBIOLOGY,
 

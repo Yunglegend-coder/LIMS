@@ -79,7 +79,7 @@
                     </small>
 
                     <strong>
-                        {{ order.sample.get_sample_type_display }}
+                        {{ order.sample.get_sample_type_full_display }}{% if order.doc_subtype %}<br><strong>Result for:</strong> {{ order.get_doc_subtype_display }}{% endif %}
                     </strong>
 
                 </div>

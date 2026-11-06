@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% block title %}Chat with {{ other_user.get_full_name|default:other_user.username }} | Poultry Diagnostic LIMS{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div><h1 class="h3 mb-1">{{ other_user.get_full_name|default:other_user.username }}</h1><p class="text-muted mb-0">{{ other_user.profile.get_role_display|default:"LIMS user" }}</p></div>
+    <a href="{% url 'message_center' %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>All messages</a>
+  </div>
+  <div id="voice-call" class="card card-outline card-info mb-3"
+       data-user-id="{{ other_user.pk }}"
+       data-current-user-id="{{ request.user.pk }}"
+       data-state-url="{% url 'voice_call_state' other_user.pk %}"
+       data-start-url="{% url 'voice_call_start' other_user.pk %}"
+       data-accept-url-template="{% url 'voice_call_accept' 0 %}"
+       data-candidate-url-template="{% url 'voice_call_candidate' 0 %}"
+       data-end-url-template="{% url 'voice_call_end' 0 %}">
+    <div class="card-body d-flex flex-wrap align-items-center gap-2">
+      <button id="start-call" type="button" class="btn btn-outline-success"><i class="fas fa-phone me-1"></i>Voice call</button>
+      <button id="accept-call" type="button" class="btn btn-success d-none"><i class="fas fa-phone me-1"></i>Accept call</button>
+      <button id="mute-call" type="button" class="btn btn-outline-secondary d-none"><i class="fas fa-microphone-slash me-1"></i>Mute</button>
+      <button id="end-call" type="button" class="btn btn-outline-danger d-none"><i class="fas fa-phone-slash me-1"></i>End call</button>
+      <span id="call-status" class="small text-muted" role="status">Keep this conversation open to receive calls. Microphone access on other devices requires HTTPS.</span>
+      <audio id="remote-audio" autoplay playsinline></audio>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body" style="min-height:300px;max-height:60vh;overflow-y:auto">
+      {% for message in messages_list %}
+        <div class="d-flex mb-3 {% if message.sender_id == request.user.pk %}justify-content-end{% endif %}">
+          <div class="p-3 rounded {% if message.sender_id == request.user.pk %}bg-primary text-white{% else %}bg-light border{% endif %}" style="max-width:80%;min-width:180px">
+            <div class="small fw-semibold">{% if message.sender_id == request.user.pk %}You{% else %}{{ message.sender.get_full_name|default:message.sender.username }}{% endif %}<span class="fw-normal ms-2">{{ message.created_at|date:"M j, H:i" }}</span></div>
+            <div class="mt-1" style="white-space:pre-wrap">{{ message.body }}</div>
+          </div>
+        </div>
+      {% empty %}<p class="text-center text-muted py-5">No messages in this conversation yet. Send the first one below.</p>{% endfor %}
+    </div>
+    <div class="card-footer">
+      <form method="post" class="d-flex gap-2">{% csrf_token %}
+        <textarea class="form-control" name="body" rows="2" maxlength="4000" placeholder="Write a message..." required></textarea>
+        <button class="btn btn-primary align-self-end" type="submit"><i class="fas fa-paper-plane me-1"></i>Send</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(() => {
+  const box = document.getElementById("voice-call");
+  if (!box) return;
+  const currentUserId = Number(box.dataset.currentUserId);
+  const stateEl = document.getElementById("call-status");
+  const startButton = document.getElementById("start-call");
+  const acceptButton = document.getElementById("accept-call");
+  const muteButton = document.getElementById("mute-call");
+  const endButton = document.getElementById("end-call");
+  const remoteAudio = document.getElementById("remote-audio");
+  const stateUrl = box.dataset.stateUrl;
+  const csrf = document.cookie.split(";").map(v => v.trim()).find(v => v.startsWith("csrftoken="))?.split("=").slice(1).join("=") || "";
+  const endpoint = (template, id) => template.replace("/0/", `/${id}/`);
+  let callId = null;
+  let peer = null;
+  let localStream = null;
+  let seenCandidates = new Set();
+  let queuedCandidates = [];
+  let handlingDescription = false;
+  let callError = false;
+
+  async function post(url, body = {}) {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {"Content-Type": "application/json", "X-CSRFToken": csrf},
+      body: JSON.stringify(body),
+      credentials: "same-origin"
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Call request failed.");
+    return data;
+  }
+
+  async function preparePeer() {
+    if (peer) return peer;
+    if (!window.RTCPeerConnection) throw new Error("This browser does not support WebRTC voice calls.");
+    if (!navigator.mediaDevices?.getUserMedia) throw new Error("Your browser blocks microphone access on this HTTP address. Open the LIMS over HTTPS to make or answer calls.");
+    localStream = await navigator.mediaDevices.getUserMedia({audio: true, video: false});
+    peer = new RTCPeerConnection({iceServers: [{urls: "stun:stun.l.google.com:19302"}]});
+    localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
+    peer.ontrack = event => { remoteAudio.srcObject = event.streams[0]; };
+    peer.onicecandidate = event => {
+      if (!event.candidate) return;
+      const candidate = event.candidate.toJSON();
+      if (!callId) queuedCandidates.push(candidate);
+      else post(endpoint(box.dataset.candidateUrlTemplate, callId), {candidate}).catch(showError);
+    };
+    peer.onconnectionstatechange = () => {
+      if (peer?.connectionState === "connected") stateEl.textContent = "Voice call connected.";
+      if (["failed", "disconnected"].includes(peer?.connectionState)) stateEl.textContent = "Call connection interrupted. Check the network and try again.";
+    };
+    muteButton.classList.remove("d-none");
+    endButton.classList.remove("d-none");
+    return peer;
+  }
+
+  async function flushCandidates() {
+    const pending = queuedCandidates.splice(0);
+    for (const candidate of pending) await post(endpoint(box.dataset.candidateUrlTemplate, callId), {candidate});
+  }
+
+  async function startCall() {
+    startButton.disabled = true;
+    callError = false;
+    try {
+      await preparePeer();
+      const offer = await peer.createOffer();
+      await peer.setLocalDescription(offer);
+      const result = await post(box.dataset.startUrl, {offer: peer.localDescription.toJSON()});
+      callId = result.call_id;
+      await flushCandidates();
+      stateEl.textContent = `Calling {{ other_user.get_full_name|default:other_user.username|escapejs }}…`;
+      endButton.classList.remove("d-none");
+    } catch (error) { showError(error); cleanup(false); }
+    finally { startButton.disabled = false; }
+  }
+
+  async function acceptCall(call) {
+    acceptButton.disabled = true;
+    callError = false;
+    try {
+      await preparePeer();
+      callId = call.id;
+      await peer.setRemoteDescription(call.offer);
+      await applyCandidates(call.candidates);
+      const answer = await peer.createAnswer();
+      await peer.setLocalDescription(answer);
+      await post(endpoint(box.dataset.acceptUrlTemplate, callId), {answer: peer.localDescription.toJSON()});
+      await flushCandidates();
+      acceptButton.classList.add("d-none");
+      stateEl.textContent = "Connecting voice call…";
+    } catch (error) { showError(error); cleanup(false); }
+    finally { acceptButton.disabled = false; }
+  }
+
+  async function applyCandidates(candidates) {
+    if (!peer?.remoteDescription) return;
+    for (const item of candidates || []) {
+      if (item.sender_id === currentUserId || seenCandidates.has(item.id)) continue;
+      try {
+        await peer.addIceCandidate(item.candidate);
+        seenCandidates.add(item.id);
+      } catch (_) { /* A later poll retries candidates rejected before SDP is ready. */ }
+    }
+  }
+
+  async function syncCall() {
+    try {
+      const response = await fetch(stateUrl, {credentials: "same-origin", cache: "no-store"});
+      if (!response.ok) return;
+      const data = await response.json();
+      const call = data.call;
+      if (!call) return;
+      if (call.status === "MISSED") {
+        stateEl.textContent = call.callee_id === currentUserId ? "Missed voice call from your colleague." : "No answer. The missed call is recorded in this conversation.";
+        if (call.id === callId || callId === null) cleanup(false);
+        return;
+      }
+      if (call.status === "ENDED") {
+        if (call.id === callId || callId === null) {
+          stateEl.textContent = "Call ended.";
+          cleanup(false);
+        }
+        return;
+      }
+      if (callId && call.id !== callId) return;
+      if (!callId && call.caller_id === currentUserId) {
+        callId = call.id;
+        stateEl.textContent = "Calling…";
+        endButton.classList.remove("d-none");
+      }
+      if (call.callee_id === currentUserId && call.status === "RINGING") {
+        if (!callError) stateEl.textContent = "Incoming voice call…";
+        acceptButton.classList.remove("d-none");
+        endButton.classList.remove("d-none");
+        callId = call.id;
+      }
+      if (callId === call.id && call.answer && peer && !peer.remoteDescription && !handlingDescription) {
+        handlingDescription = true;
+        await peer.setRemoteDescription(call.answer);
+        handlingDescription = false;
+      }
+      if (callId === call.id) await applyCandidates(call.candidates);
+    } catch (_) { handlingDescription = false; }
+  }
+
+  function cleanup(notifyServer) {
+    const oldCallId = callId;
+    if (notifyServer && oldCallId) post(endpoint(box.dataset.endUrlTemplate, oldCallId)).catch(() => {});
+    peer?.close(); peer = null;
+    localStream?.getTracks().forEach(track => track.stop()); localStream = null;
+    remoteAudio.srcObject = null;
+    callId = null; seenCandidates = new Set(); queuedCandidates = [];
+    acceptButton.classList.add("d-none"); muteButton.classList.add("d-none"); endButton.classList.add("d-none");
+    muteButton.innerHTML = '<i class="fas fa-microphone-slash me-1"></i>Mute';
+  }
+
+  function showError(error) {
+    callError = true;
+    stateEl.textContent = error.message || "Voice call failed. Allow microphone access and try again.";
+  }
+  startButton.addEventListener("click", startCall);
+  acceptButton.addEventListener("click", () => { fetch(stateUrl, {credentials: "same-origin", cache: "no-store"}).then(r => r.json()).then(d => d.call && acceptCall(d.call)).catch(showError); });
+  muteButton.addEventListener("click", () => {
+    const track = localStream?.getAudioTracks()[0];
+    if (!track) return;
+    track.enabled = !track.enabled;
+    muteButton.innerHTML = track.enabled ? '<i class="fas fa-microphone-slash me-1"></i>Mute' : '<i class="fas fa-microphone me-1"></i>Unmute';
+  });
+  endButton.addEventListener("click", () => { post(endpoint(box.dataset.endUrlTemplate, callId)).catch(() => {}); stateEl.textContent = "Call ended."; cleanup(false); });
+  setInterval(syncCall, 1500);
+})();
+</script>
+{% endblock %}

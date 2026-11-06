@@ -76,7 +76,7 @@ Sample {{ sample.case_code }}
                     </small>
 
                     <strong>
-                        {{ sample.get_sample_type_display }}
+                        {{ sample.get_sample_type_full_display }}
                     </strong>
 
                 </div>
@@ -309,7 +309,7 @@ Sample {{ sample.case_code }}
         <div class="card-header bg-white border-bottom">
 
             <h5 class="fw-bold mb-0">
-                Clinical / Sample History
+                Flock and Clinical Details
             </h5>
 
         </div>
@@ -318,140 +318,9 @@ Sample {{ sample.case_code }}
 
             <div class="row g-4">
 
-                {% if sample.history %}
-
-                    <div class="col-md-6">
-
-                        <small class="text-muted d-block">
-                            History
-                        </small>
-
-                        <div>
-                            {{ sample.history|linebreaksbr }}
-                        </div>
-
-                    </div>
-
-                {% endif %}
-
-
-                {% if sample.source_of_birds %}
-
-                    <div class="col-md-6">
-
-                        <small class="text-muted d-block">
-                            Source of Birds
-                        </small>
-
-                        <div>
-                            {{ sample.source_of_birds|linebreaksbr }}
-                        </div>
-
-                    </div>
-
-                {% endif %}
-
-
-                {% if sample.source_of_water %}
-
-                    <div class="col-md-6">
-
-                        <small class="text-muted d-block">
-                            Source of Water
-                        </small>
-
-                        <div>
-                            {{ sample.source_of_water|linebreaksbr }}
-                        </div>
-
-                    </div>
-
-                {% endif %}
-
-
-                {% if sample.feed_type %}
-
-                    <div class="col-md-6">
-
-                        <small class="text-muted d-block">
-                            Feed Type
-                        </small>
-
-                        <div>
-                            {{ sample.feed_type|linebreaksbr }}
-                        </div>
-
-                    </div>
-
-                {% endif %}
-
-
-                {% if sample.last_vaccination %}
-
-                    <div class="col-md-6">
-
-                        <small class="text-muted d-block">
-                            Last Vaccination
-                        </small>
-
-                        <div>
-                            {{ sample.last_vaccination|linebreaksbr }}
-                        </div>
-
-                    </div>
-
-                {% endif %}
-
-
-                {% if sample.antibiotics_used %}
-
-                    <div class="col-md-6">
-
-                        <small class="text-muted d-block">
-                            Antibiotics Used
-                        </small>
-
-                        <div>
-                            {{ sample.antibiotics_used|linebreaksbr }}
-                        </div>
-
-                    </div>
-
-                {% endif %}
-
-
-                {% if sample.mortality_pattern %}
-
-                    <div class="col-md-6">
-
-                        <small class="text-muted d-block">
-                            Mortality Pattern
-                        </small>
-
-                        <div>
-                            {{ sample.mortality_pattern|linebreaksbr }}
-                        </div>
-
-                    </div>
-
-                {% endif %}
-
-
-                {% if sample.pathology %}
-
-                    <div class="col-md-6">
-
-                        <small class="text-muted d-block">
-                            Pathology
-                        </small>
-
-                        <div>
-                            {{ sample.pathology|linebreaksbr }}
-                        </div>
-
-                    </div>
-
-                {% endif %}
+                {% for label, value in clinical_details %}
+                    {% if value %}<div class="col-md-6"><small class="text-muted d-block">{{ label }}</small><div>{{ value|linebreaksbr }}</div></div>{% endif %}
+                {% endfor %}
 
 
                 {% if sample.remarks %}
@@ -471,7 +340,7 @@ Sample {{ sample.case_code }}
                 {% endif %}
 
 
-                {% if not sample.history and not sample.source_of_birds and not sample.source_of_water and not sample.feed_type and not sample.last_vaccination and not sample.antibiotics_used and not sample.mortality_pattern and not sample.pathology and not sample.remarks %}
+                {% if not has_clinical_details and not sample.remarks %}
 
                     <div class="col-12">
 

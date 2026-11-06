@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Batch customer email{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center"><div class="col-xl-9">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white"><h1 class="h4 fw-bold mb-0">Batch email customers</h1></div>
+            <div class="card-body">
+                <p class="text-muted">Each customer receives a separate email. Only customers with an email address are listed.</p>
+                {% if email_delivery_ready %}
+                    <div class="alert alert-success">{{ email_delivery_status }}</div>
+                {% else %}
+                    <div class="alert alert-warning">{{ email_delivery_status }}</div>
+                {% endif %}
+                <form method="post">{% csrf_token %}
+                    {{ form.non_field_errors }}
+                    <div class="mb-3"><label class="form-label">Recipients</label><div class="border rounded p-3" style="max-height: 280px; overflow:auto">{{ form.customers }}</div>{{ form.customers.errors }}</div>
+                    <div class="mb-3"><label class="form-label" for="id_subject">Subject</label>{{ form.subject }}{{ form.subject.errors }}</div>
+                    <div class="mb-3"><label class="form-label" for="id_body">Message</label>{{ form.body }}{{ form.body.errors }}</div>
+                    <div class="d-flex justify-content-between"><a href="{% url 'customer_list' %}" class="btn btn-outline-secondary">Cancel</a><button class="btn btn-primary" type="submit"{% if not email_delivery_ready %} disabled{% endif %}><i class="fas fa-paper-plane me-1"></i>Send email</button></div>
+                </form>
+            </div>
+        </div>
+    </div></div>
+</div>
+{% endblock %}

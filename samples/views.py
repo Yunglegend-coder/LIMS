@@ -9,6 +9,8 @@ from django.views.generic import (
     CreateView,
     DetailView,
 )
+from accounts.models import UserRole
+from core.access import RoleRequiredMixin
 
 
 class SampleListView(ListView):
@@ -40,14 +42,16 @@ class SampleListView(ListView):
 
         return queryset
 
-class SampleCreateView(CreateView):
+class SampleCreateView(RoleRequiredMixin, CreateView):
+    allowed_roles = (UserRole.RECEPTIONIST, UserRole.MANAGER)
+    allow_receptionist = True
     model = Sample
     form_class = SampleForm
     template_name = "samples/sample_form.html"
 
     def form_valid(self, form):
 
-        RegisterSampleService.execute(
+        sample = RegisterSampleService.execute(
             form=form,
             user=self.request.user,
         )
@@ -57,13 +61,38 @@ class SampleCreateView(CreateView):
             "Sample registered successfully."
         )
 
-        return redirect("sample_list")
+        if self.request.user.profile.role == UserRole.RECEPTIONIST:
+            return redirect("sample_create")
+        return redirect("sample_detail", pk=sample.pk)
 
 
 class SampleDetailView(DetailView):
     model = Sample
     template_name = "samples/sample_detail.html"
     context_object_name = "sample"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        sample = context["sample"]
+        details = [
+            ("Age", sample.age),
+            ("Breed/Species", sample.breed_species),
+            ("Source of Birds", sample.source_of_birds),
+            ("Feed", sample.feed_type),
+            ("Population", sample.population),
+            ("Water Source", sample.source_of_water),
+            ("Housing", sample.housing),
+            ("Major Complaint", sample.major_complaint),
+            ("Mortality pattern", sample.mortality_pattern),
+            ("Medication", sample.medication),
+            ("Vaccination History", sample.vaccination_history),
+            ("Drugs", sample.drugs),
+            ("Vaccination", sample.vaccination),
+            ("Last vaccination date", sample.last_vaccination),
+        ]
+        context["clinical_details"] = details
+        context["has_clinical_details"] = any(value for _, value in details)
+        return context
 
     def get_queryset(self):
         return (

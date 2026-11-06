@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 fw-bold mb-3">Notifications</h1>
+    <div class="list-group">
+        {% for notification in notifications %}
+        <div class="list-group-item {% if not notification.read_at %}list-group-item-primary{% endif %}">
+            <div class="d-flex justify-content-between gap-3">
+                <div><strong>{{ notification.title }}</strong><div>{{ notification.message }}</div><small class="text-muted">{{ notification.created_at|date:"d M Y, H:i" }}</small></div>
+                <form method="post" action="{% url 'notification_read' notification.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-primary" type="submit">Open sample</button></form>
+            </div>
+        </div>
+        {% empty %}<div class="list-group-item text-muted">You have no notifications.</div>{% endfor %}
+    </div>
+</div>
+{% endblock %}

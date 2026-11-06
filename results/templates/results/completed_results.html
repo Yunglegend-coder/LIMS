@@ -1,0 +1,679 @@
+{% extends "base.html" %}
+
+{% block title %}
+Completed Laboratory Results
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+
+<!-- ===================================================== -->
+<!-- PAGE HEADER -->
+<!-- ===================================================== -->
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+
+    <div>
+
+        <h2 class="fw-bold mb-1">
+            Completed Laboratory Results
+        </h2>
+
+        <p class="text-muted mb-0">
+            View and manage completed laboratory reports.
+        </p>
+
+    </div>
+
+    <div class="mt-3 mt-md-0">
+
+        <a href="{% url 'laboratory_results_dashboard' %}"
+           class="btn btn-outline-secondary">
+
+            <i class="fas fa-arrow-left me-1"></i>
+            Laboratory Results
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- SEARCH & FILTERS -->
+<!-- ===================================================== -->
+
+<div class="card border-0 shadow-sm mb-4">
+
+    <div class="card-header bg-white border-bottom">
+
+        <h5 class="fw-bold mb-0">
+
+            <i class="fas fa-filter me-2"></i>
+            Search & Filters
+
+        </h5>
+
+    </div>
+
+
+    <div class="card-body">
+
+        <form method="get">
+
+            <div class="row g-3">
+
+                <!-- Search -->
+
+                <div class="col-lg-4">
+
+                    <label class="form-label fw-semibold">
+                        Search
+                    </label>
+
+                    <input
+                        type="text"
+                        name="search"
+                        value="{{ search }}"
+                        class="form-control"
+                        placeholder="Case code, customer or farm..."
+                    >
+
+                </div>
+
+
+                <!-- Customer -->
+
+                <div class="col-lg-2">
+
+                    <label class="form-label fw-semibold">
+                        Customer
+                    </label>
+
+                    <select
+                        name="customer"
+                        class="form-select"
+                    >
+
+                        <option value="">
+                            All Customers
+                        </option>
+
+                        {% for customer in customers %}
+
+                            <option
+                                value="{{ customer.pk }}"
+                                {% if selected_customer == customer.pk|stringformat:"s" %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ customer.name }}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- Farm -->
+
+                <div class="col-lg-2">
+
+                    <label class="form-label fw-semibold">
+                        Farm
+                    </label>
+
+                    <select
+                        name="farm"
+                        class="form-select"
+                    >
+
+                        <option value="">
+                            All Farms
+                        </option>
+
+                        {% for farm in farms %}
+
+                            <option
+                                value="{{ farm.pk }}"
+                                {% if selected_farm == farm.pk|stringformat:"s" %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ farm.name }}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- Date From -->
+
+                <div class="col-lg-2">
+
+                    <label class="form-label fw-semibold">
+                        From
+                    </label>
+
+                    <input
+                        type="date"
+                        name="date_from"
+                        value="{{ date_from }}"
+                        class="form-control"
+                    >
+
+                </div>
+
+
+                <!-- Date To -->
+
+                <div class="col-lg-2">
+
+                    <label class="form-label fw-semibold">
+                        To
+                    </label>
+
+                    <input
+                        type="date"
+                        name="date_to"
+                        value="{{ date_to }}"
+                        class="form-control"
+                    >
+
+                </div>
+
+
+                <!-- Sort -->
+
+                <div class="col-lg-3">
+
+                    <label class="form-label fw-semibold">
+                        Sort By
+                    </label>
+
+                    <select
+                        name="sort"
+                        class="form-select"
+                    >
+
+                        <option
+                            value="date_desc"
+                            {% if sort == "date_desc" %}
+                                selected
+                            {% endif %}
+                        >
+                            Newest First
+                        </option>
+
+                        <option
+                            value="date_asc"
+                            {% if sort == "date_asc" %}
+                                selected
+                            {% endif %}
+                        >
+                            Oldest First
+                        </option>
+
+                        <option
+                            value="case_asc"
+                            {% if sort == "case_asc" %}
+                                selected
+                            {% endif %}
+                        >
+                            Case Code A–Z
+                        </option>
+
+                        <option
+                            value="case_desc"
+                            {% if sort == "case_desc" %}
+                                selected
+                            {% endif %}
+                        >
+                            Case Code Z–A
+                        </option>
+
+                        <option
+                            value="customer_asc"
+                            {% if sort == "customer_asc" %}
+                                selected
+                            {% endif %}
+                        >
+                            Customer A–Z
+                        </option>
+
+                        <option
+                            value="customer_desc"
+                            {% if sort == "customer_desc" %}
+                                selected
+                            {% endif %}
+                        >
+                            Customer Z–A
+                        </option>
+
+                        <option
+                            value="farm_asc"
+                            {% if sort == "farm_asc" %}
+                                selected
+                            {% endif %}
+                        >
+                            Farm A–Z
+                        </option>
+
+                        <option
+                            value="farm_desc"
+                            {% if sort == "farm_desc" %}
+                                selected
+                            {% endif %}
+                        >
+                            Farm Z–A
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- Buttons -->
+
+                <div class="col-lg-9 d-flex align-items-end gap-2">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+
+                        <i class="fas fa-search me-1"></i>
+                        Search
+
+                    </button>
+
+
+                    <a
+                        href="{% url 'completed_results' laboratory=laboratory %}"
+                        class="btn btn-outline-secondary"
+                    >
+
+                        <i class="fas fa-times me-1"></i>
+                        Clear Filters
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- RESULTS SUMMARY -->
+<!-- ===================================================== -->
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+    <div>
+
+        <h5 class="fw-bold mb-0">
+            Completed Samples
+        </h5>
+
+        <small class="text-muted">
+
+            {{ page_obj.paginator.count }}
+            completed sample{{ page_obj.paginator.count|pluralize }}
+
+        </small>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- SAMPLE TABLE -->
+<!-- ===================================================== -->
+
+<div class="card border-0 shadow-sm">
+
+    <div class="card-body p-0">
+
+        {% if samples %}
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th>
+                                Case Code
+                            </th>
+
+                            <th>
+                                Customer
+                            </th>
+
+                            <th>
+                                Farm
+                            </th>
+
+                            <th>
+                                House
+                            </th>
+
+                            <th>
+                                Sample Type
+                            </th>
+
+                            <th>
+                                Received
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th class="text-end">
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for sample in samples %}
+
+                            <tr>
+
+                                <!-- Case Code -->
+
+                                <td>
+
+                                    <strong class="text-primary">
+
+                                        {{ sample.case_code }}
+
+                                    </strong>
+
+                                </td>
+
+
+                                <!-- Customer -->
+
+                                <td>
+
+                                    {% if sample.farm and sample.farm.customer %}
+
+                                        {{ sample.farm.customer.name }}
+
+                                    {% else %}
+
+                                        <span class="text-muted">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- Farm -->
+
+                                <td>
+
+                                    {% if sample.farm %}
+
+                                        {{ sample.farm.name }}
+
+                                    {% else %}
+
+                                        <span class="text-muted">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- House -->
+
+                                <td>
+
+                                    {% if sample.house %}
+
+                                        {{ sample.house.name }}
+
+                                    {% else %}
+
+                                        <span class="text-muted">
+                                            —
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- Sample Type -->
+
+                                <td>
+
+                                    {{ sample.get_sample_type_full_display }}
+
+                                </td>
+
+
+                                <!-- Received -->
+
+                                <td>
+
+                                    {{ sample.received_date|date:"d M Y" }}
+
+                                </td>
+
+
+                                <!-- Status -->
+
+                                <td>
+
+                                    <span class="badge text-bg-success">
+
+                                        Completed
+
+                                    </span>
+
+                                </td>
+
+
+                                <!-- Actions -->
+
+                                <td class="text-end">
+
+                                    <div class="btn-group">
+
+                                        <a
+                                            href="{% url 'sample_final_result' sample.pk %}"
+                                            class="btn btn-sm btn-outline-primary"
+                                            title="View result"
+                                        >
+
+                                            <i class="fas fa-eye"></i>
+                                            View
+
+                                        </a>
+
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <!-- ================================================= -->
+            <!-- NO RESULTS -->
+            <!-- ================================================= -->
+
+            <div class="text-center py-5">
+
+                <i class="fas fa-flask fa-3x text-muted mb-3"></i>
+
+                <h5 class="fw-bold">
+                    No Completed Results
+                </h5>
+
+                <p class="text-muted mb-3">
+
+                    No completed samples match your search
+                    or filter criteria.
+
+                </p>
+
+                <a
+                    href="{% url 'completed_results' laboratory=laboratory %}"
+                    class="btn btn-outline-primary"
+                >
+
+                    <i class="fas fa-refresh me-1"></i>
+                    Reset Filters
+
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- PAGINATION -->
+<!-- ===================================================== -->
+
+{% if is_paginated %}
+
+    <nav
+        class="mt-4"
+        aria-label="Completed results pagination"
+    >
+
+        <ul class="pagination justify-content-center">
+
+            <!-- Previous -->
+
+            {% if page_obj.has_previous %}
+
+                <li class="page-item">
+
+                    <a
+                        class="page-link"
+                        href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search|urlencode }}{% endif %}{% if selected_customer %}&customer={{ selected_customer }}{% endif %}{% if selected_farm %}&farm={{ selected_farm }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}"
+                    >
+
+                        Previous
+
+                    </a>
+
+                </li>
+
+            {% else %}
+
+                <li class="page-item disabled">
+
+                    <span class="page-link">
+                        Previous
+                    </span>
+
+                </li>
+
+            {% endif %}
+
+
+            <!-- Page Number -->
+
+            <li class="page-item active">
+
+                <span class="page-link">
+
+                    Page
+                    {{ page_obj.number }}
+                    of
+                    {{ page_obj.paginator.num_pages }}
+
+                </span>
+
+            </li>
+
+
+            <!-- Next -->
+
+            {% if page_obj.has_next %}
+
+                <li class="page-item">
+
+                    <a
+                        class="page-link"
+                        href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search|urlencode }}{% endif %}{% if selected_customer %}&customer={{ selected_customer }}{% endif %}{% if selected_farm %}&farm={{ selected_farm }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}"
+                    >
+
+                        Next
+
+                    </a>
+
+                </li>
+
+            {% else %}
+
+                <li class="page-item disabled">
+
+                    <span class="page-link">
+                        Next
+                    </span>
+
+                </li>
+
+            {% endif %}
+
+        </ul>
+
+    </nav>
+
+{% endif %}
+
+
+</div>
+
+{% endblock %}

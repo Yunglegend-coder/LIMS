@@ -3,7 +3,6 @@
 {% block title %}
 {{ assay.name }} — Pending Results
 {% endblock %}
-
 {% block content %}
 
 <div class="container-fluid">
@@ -102,157 +101,673 @@
     </div>
 
 
-    <!-- RESULT FORM -->
 
-    <form method="post">
+<!-- ================================================= -->
+<!-- RESULT FORM -->
+<!-- ================================================= -->
 
-        {% csrf_token %}
+<form method="post" id="batch-result-form">
 
+    {% csrf_token %}
 
-        <div class="card border-0 shadow-sm">
+    <div class="card border-0 shadow-sm">
 
-            <div class="card-header bg-white border-bottom">
+        <div class="card-header bg-white border-bottom">
 
-                <div class="d-flex
-                            justify-content-between
-                            align-items-center">
+            <div class="d-flex
+                        justify-content-between
+                        align-items-center">
 
-                    <h5 class="fw-bold mb-0">
+                <h5 class="fw-bold mb-0">
+                    {{ assay.name }}
+                </h5>
 
-                        {{ assay.name }}
-
-                    </h5>
-
-                    <span class="badge text-bg-warning">
-
-                        {{ orders|length }} Pending
-
-                    </span>
-
-                </div>
+                <span class="badge text-bg-warning">
+                    {{ orders|length }} Pending
+                </span>
 
             </div>
 
+        </div>
 
-            <div class="card-body">
+
+        <div class="card-body">
+
+            {% if orders %}
+
+                {% if assay.category == "BINARY" or assay.category == "AST" or assay.category == "GRAM" or assay.category == "TSI" or assay.category == "CULTURE" or assay.category == "NDHI" or assay.category == "PCR" or assay.category == "COUNT" %}
+                <div class="border rounded bg-light p-3 mb-4" id="batch-bulk-controls">
+                    <div class="d-flex flex-wrap align-items-end gap-2">
+                        <div class="form-check me-2">
+                            <input class="form-check-input" type="checkbox" id="select-all-pending">
+                            <label class="form-check-label fw-semibold" for="select-all-pending">Select all pending</label>
+                        </div>
+
+                        {% if assay.category == "AST" %}
+                            <div><label class="form-label mb-1" for="bulk-field">Antibiotic</label><select id="bulk-field" class="form-select"><option value="">Select antibiotic</option>{% for antibiotic in antibiotics %}<option value="ast_{{ antibiotic.pk }}">{{ antibiotic.code }} — {{ antibiotic.name }}</option>{% endfor %}</select></div>
+                            <input type="hidden" id="bulk-value" value="">
+                            <div><label class="form-label mb-1" for="bulk-choice">Interpretation</label><select id="bulk-choice" class="form-select"><option value="">Select interpretation</option><option value="S">Sensitive</option><option value="I">Intermediate</option><option value="R">Resistant</option></select></div>
+                        {% elif assay.category == "BINARY" %}
+                            <input type="hidden" id="bulk-field" value="result">
+                            <div><label class="form-label mb-1" for="bulk-value">Result</label><select id="bulk-value" class="form-select"><option value="">Select result</option>{% for value, label in bulk_binary_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+                        {% elif assay.category == "GRAM" %}
+                            <input type="hidden" id="bulk-field" value="result">
+                            <div><label class="form-label mb-1" for="bulk-value">Result</label><select id="bulk-value" class="form-select"><option value="">Select result</option>{% for value, label in bulk_gram_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+                        {% elif assay.category == "TSI" %}
+                            <input type="hidden" id="bulk-field" value="result">
+                            <div><label class="form-label mb-1" for="bulk-value">Result</label><select id="bulk-value" class="form-select"><option value="">Select result</option>{% for value, label in tsi_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+                        {% elif assay.category == "CULTURE" %}
+                            <input type="hidden" id="bulk-field" value="growth">
+                            <div><label class="form-label mb-1" for="bulk-value">Growth</label><select id="bulk-value" class="form-select"><option value="">Select growth</option>{% for value, label in bulk_culture_growth_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+                        {% elif assay.category == "NDHI" %}
+                            <input type="hidden" id="bulk-field" value="result">
+                            <div><label class="form-label mb-1" for="bulk-text">Result text</label><input type="text" id="bulk-text" class="form-control" placeholder="Enter result to apply"></div>
+                        {% elif assay.category == "PCR" %}
+                            <div><label class="form-label mb-1" for="bulk-field">Field</label><select id="bulk-field" class="form-select"><option value="">Select field</option><option value="target">Target</option><option value="result">Result</option><option value="interpretation">Interpretation</option></select></div>
+                            <div><label class="form-label mb-1" for="bulk-text">Value</label><input type="text" id="bulk-text" class="form-control" placeholder="Enter value to apply"></div>
+                        {% elif assay.category == "COUNT" %}
+                            <div><label class="form-label mb-1" for="bulk-field">Field</label><select id="bulk-field" class="form-select"><option value="count">Count</option><option value="unit">Unit</option></select></div>
+                            <div><label class="form-label mb-1" for="bulk-text">Value</label><input type="text" id="bulk-text" class="form-control" placeholder="Enter value to apply"></div>
+                        {% endif %}
+
+                        <button type="button" class="btn btn-primary" data-bulk-apply="selected">Apply to selected</button>
+                        <button type="button" class="btn btn-outline-primary" data-bulk-apply="unselected">Apply to unselected</button>
+                    </div>
+                    <div class="small text-muted mt-2">Bulk changes fill the entry fields only. Review exceptions, then save results.</div>
+                </div>
+                {% endif %}
 
 
-                {% if orders %}
+                <!-- ================================================= -->
+                <!-- BINARY BULK ENTRY -->
+                <!-- ================================================= -->
 
+                {% if assay.category == "BINARY" %}
 
                     {% for order in orders %}
 
-                        <div class="border rounded p-3 mb-4">
+                        <div class="border rounded p-3 mb-4 batch-entry-row">
 
-                            <!-- SAMPLE -->
+                            <div class="form-check mb-2"><input class="form-check-input batch-row-select" type="checkbox" aria-label="Select {{ order.sample.case_code }}"></div>
 
                             <div class="mb-3">
 
                                 <strong class="text-primary fs-5">
-
                                     {{ order.sample.case_code }}
-
                                 </strong>
 
                                 <div class="small text-muted">
-
-                                    {{ order.sample.get_sample_type_display }}
-
+                                    {{ order.sample.get_sample_type_full_display }}{% if order.doc_subtype %}<br><strong>Result for:</strong> {{ order.get_doc_subtype_display }}{% endif %}
                                 </div>
 
                             </div>
 
 
-                            <!-- BINARY RESULT -->
+                            <div class="row align-items-center">
 
-                            {% if assay.category == "BINARY" %}
-
-                                <div class="row align-items-center">
-
-                                    <div class="col-md-4">
-
-                                        <strong>
-                                            {{ assay.name }}
-                                        </strong>
-
-                                    </div>
-
-
-                                    <div class="col-md-8">
-
-                                        <div class="form-check form-check-inline">
-
-                                            <input
-                                                class="form-check-input"
-                                                type="radio"
-                                                name="result_{{ order.pk }}"
-                                                value="POS"
-                                                id="positive_{{ order.pk }}"
-                                            >
-
-                                            <label
-                                                class="form-check-label"
-                                                for="positive_{{ order.pk }}"
-                                            >
-
-                                                +
-
-                                            </label>
-
-                                        </div>
-
-
-                                        <div class="form-check form-check-inline">
-
-                                            <input
-                                                class="form-check-input"
-                                                type="radio"
-                                                name="result_{{ order.pk }}"
-                                                value="NEG"
-                                                id="negative_{{ order.pk }}"
-                                            >
-
-                                            <label
-                                                class="form-check-label"
-                                                for="negative_{{ order.pk }}"
-                                            >
-
-                                                -
-
-                                            </label>
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-
-                            {% else %}
-
-                                <div class="alert alert-secondary mb-0">
-
-                                    Bulk entry for
+                                <div class="col-md-4">
 
                                     <strong>
-                                        {{ assay.get_category_display }}
+                                        {{ assay.name }}
                                     </strong>
-
-                                    will be implemented separately.
 
                                 </div>
 
-                            {% endif %}
 
+                                <div class="col-md-8">
+
+                                    <div class="form-check form-check-inline">
+
+                                    <input
+                                            class="form-check-input"
+                                            type="radio"
+                                            name="result_{{ order.pk }}"
+                                            value="POS"
+                                            id="positive_{{ order.pk }}"
+                                            data-bulk-field="result"
+                                        >
+
+                                        <label
+                                            class="form-check-label"
+                                            for="positive_{{ order.pk }}"
+                                        >
+                                            Positive (+)
+                                        </label>
+
+                                    </div>
+
+
+                                    <div class="form-check form-check-inline">
+
+                                        <input
+                                            class="form-check-input"
+                                            type="radio"
+                                            name="result_{{ order.pk }}"
+                                            value="NEG"
+                                            id="negative_{{ order.pk }}"
+                                            data-bulk-field="result"
+                                        >
+
+                                        <label
+                                            class="form-check-label"
+                                            for="negative_{{ order.pk }}"
+                                        >
+                                            Negative (-)
+                                        </label>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
 
                         </div>
 
                     {% endfor %}
 
 
-                    <!-- SAVE BUTTON -->
+                <!-- ================================================= -->
+                <!-- AST BULK ENTRY -->
+                <!-- ================================================= -->
 
-                    <div class="d-flex justify-content-end">
+                {% elif assay.category == "AST" %}
+
+                    <div class="table-responsive">
+
+                        <table class="table table-bordered
+                                      table-hover align-middle">
+
+                            <thead class="table-light">
+
+                                <tr>
+
+                                    <th style="min-width: 150px;">
+                                        Sample
+                                    </th>
+
+
+                                    {% for antibiotic in antibiotics %}
+
+                                        <th class="text-center"
+                                            style="min-width: 130px;">
+
+                                            {{ antibiotic.code }}
+
+                                            <div class="small text-muted">
+                                                {{ antibiotic.name }}
+                                            </div>
+
+                                        </th>
+
+                                    {% endfor %}
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody>
+
+                                {% for order in orders %}
+
+                                    <tr class="batch-entry-row">
+
+                                        <td>
+
+                                            <div class="form-check mb-1"><input class="form-check-input batch-row-select" type="checkbox" aria-label="Select {{ order.sample.case_code }}"></div>
+
+                                            <strong class="text-primary">
+                                                {{ order.sample.case_code }}
+                                            </strong>
+
+                                            <div class="small text-muted">
+                                                {{ order.sample.get_sample_type_full_display }}{% if order.doc_subtype %}<br><strong>Result for:</strong> {{ order.get_doc_subtype_display }}{% endif %}
+                                            </div>
+
+                                        </td>
+
+
+                                        {% for antibiotic in antibiotics %}
+
+                                            <td>
+
+                                                <select
+                                                    name="ast_{{ order.pk }}_{{ antibiotic.pk }}"
+                                                    class="form-select form-select-sm"
+                                                    data-bulk-field="ast_{{ antibiotic.pk }}"
+                                                >
+
+                                                    <option value="">
+                                                        —
+                                                    </option>
+
+                                                    <option value="S">
+                                                        Sensitive
+                                                    </option>
+
+                                                    <option value="I">
+                                                        Intermediate
+                                                    </option>
+
+                                                    <option value="R">
+                                                        Resistant
+                                                    </option>
+
+                                                </select>
+
+                                            </td>
+
+                                        {% endfor %}
+
+                                    </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+
+                <!-- ================================================= -->
+                <!-- GRAM STAIN BULK ENTRY -->
+                <!-- ================================================= -->
+
+                {% elif assay.category == "GRAM" %}
+
+                    {% for order in orders %}
+
+                        <div class="border rounded p-3 mb-4 batch-entry-row">
+
+                            <div class="form-check mb-2"><input class="form-check-input batch-row-select" type="checkbox" aria-label="Select {{ order.sample.case_code }}"></div>
+
+                            <!-- SAMPLE -->
+
+                            <div class="mb-3">
+
+                                <strong class="text-primary fs-5">
+                                    {{ order.sample.case_code }}
+                                </strong>
+
+                                <div class="small text-muted">
+                                    {{ order.sample.get_sample_type_full_display }}{% if order.doc_subtype %}<br><strong>Result for:</strong> {{ order.get_doc_subtype_display }}{% endif %}
+                                </div>
+
+                            </div>
+
+
+                            <!-- GRAM RESULT -->
+
+                            <div>
+
+                                <label
+                                    class="form-label fw-bold"
+                                    for="gram_{{ order.pk }}"
+                                >
+                                    Gram Stain Result
+                                </label>
+
+
+                                <select
+                                    name="gram_{{ order.pk }}"
+                                    id="gram_{{ order.pk }}"
+                                    class="form-select"
+                                    data-bulk-field="result"
+                                >
+
+                                    <option value="">
+                                        Select result
+                                    </option>
+
+                                    <option value="GPC">
+                                        Gram Positive Cocci
+                                    </option>
+
+                                    <option value="GPB">
+                                        Gram Positive Bacilli
+                                    </option>
+
+                                    <option value="GNC">
+                                        Gram Negative Cocci
+                                    </option>
+
+                                    <option value="GNB">
+                                        Gram Negative Bacilli
+                                    </option>
+
+                                    <option value="MIX">
+                                        Mixed Flora
+                                    </option>
+
+                                    <option value="NONE">
+                                        No Organisms Seen
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                <!-- ================================================= -->
+<!-- TSI BULK ENTRY -->
+<!-- ================================================= -->
+
+{% elif assay.category == "TSI" %}
+
+    {% for order in orders %}
+
+        <div class="border rounded p-3 mb-4 batch-entry-row">
+
+            <div class="form-check mb-2"><input class="form-check-input batch-row-select" type="checkbox" aria-label="Select {{ order.sample.case_code }}"></div>
+
+            <!-- SAMPLE -->
+
+            <div class="mb-3">
+
+                <strong class="text-primary fs-5">
+                    {{ order.sample.case_code }}
+                </strong>
+
+                <div class="small text-muted">
+                    {{ order.sample.get_sample_type_full_display }}{% if order.doc_subtype %}<br><strong>Result for:</strong> {{ order.get_doc_subtype_display }}{% endif %}
+                </div>
+
+            </div>
+
+
+            <!-- TSI RESULT -->
+
+            <div>
+
+                <label
+                    for="tsi_{{ order.pk }}"
+                    class="form-label fw-bold"
+                >
+                    TSI Result
+                </label>
+
+                <select
+                    name="tsi_{{ order.pk }}"
+                    id="tsi_{{ order.pk }}"
+                    class="form-select"
+                    data-bulk-field="result"
+                >
+
+                    <option value="">
+                        Select TSI result
+                    </option>
+
+                    <option value="NO REACTION">
+                        NO REACTION
+                    </option>
+
+                    <option value="K/K">
+                        K/K
+                    </option>
+
+                    <option value="K/K G">
+                        K/K Gas
+                    </option>
+
+                    <option value="K/K H2S">
+                        K/K H2S
+                    </option>
+
+                    <option value="K/K G H2S">
+                        K/K Gas + H2S
+                    </option>
+
+                    <option value="K/A">
+                        K/A
+                    </option>
+
+                    <option value="K/A G">
+                        K/A Gas
+                    </option>
+
+                    <option value="K/A H2S">
+                        K/A H2S
+                    </option>
+
+                    <option value="K/A G H2S">
+                        K/A Gas + H2S
+                    </option>
+
+                    <option value="A/A">
+                        A/A
+                    </option>
+
+                    <option value="A/A G">
+                        A/A Gas
+                    </option>
+
+                    <option value="A/A H2S">
+                        A/A H2S
+                    </option>
+
+                    <option value="A/A G H2S">
+                        A/A Gas + H2S
+                    </option>
+
+                    <option value="A/K">
+                        A/K
+                    </option>
+
+                    <option value="A/K G">
+                        A/K Gas
+                    </option>
+
+                    <option value="A/K H2S">
+                        A/K H2S
+                    </option>
+
+                    <option value="A/K G H2S">
+                        A/K Gas + H2S
+                    </option>
+
+                    <option value="K/N">
+                        K/N
+                    </option>
+
+                    <option value="K/N G">
+                        K/N Gas
+                    </option>
+
+                    <option value="K/N H2S">
+                        K/N H2S
+                    </option>
+
+                    <option value="K/N G H2S">
+                        K/N Gas + H2S
+                    </option>
+
+                    <option value="A/N">
+                        A/N
+                    </option>
+
+                    <option value="A/N G">
+                        A/N Gas
+                    </option>
+
+                    <option value="A/N H2S">
+                        A/N H2S
+                    </option>
+
+                    <option value="A/N G H2S">
+                        A/N Gas + H2S
+                    </option>
+
+                    <option value="N/A">
+                        N/A
+                    </option>
+
+                    <option value="N/A G">
+                        N/A Gas
+                    </option>
+
+                    <option value="N/A H2S">
+                        N/A H2S
+                    </option>
+
+                    <option value="N/A G H2S">
+                        N/A Gas + H2S
+                    </option>
+
+                    <option value="N/K">
+                        N/K
+                    </option>
+
+                    <option value="N/K G">
+                        N/K Gas
+                    </option>
+
+                    <option value="N/K H2S">
+                        N/K H2S
+                    </option>
+
+                    <option value="N/K G H2S">
+                        N/K Gas + H2S
+                    </option>
+
+                    <option value="N/N">
+                        N/N
+                    </option>
+
+                    <option value="N/N G">
+                        N/N Gas
+                    </option>
+
+                    <option value="N/N H2S">
+                        N/N H2S
+                    </option>
+
+                    <option value="N/N G H2S">
+                        N/N Gas + H2S
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="mt-3">
+                <label for="tsi_{{ order.pk }}_remarks" class="form-label fw-bold">Remarks (optional)</label>
+                <textarea name="tsi_{{ order.pk }}_remarks" id="tsi_{{ order.pk }}_remarks" class="form-control" rows="2"></textarea>
+            </div>
+
+        </div>
+
+    {% endfor %}
+
+                <!-- CULTURE BULK ENTRY -->
+                {% elif assay.category == "CULTURE" %}
+
+                    {% for order in orders %}
+                        <div class="border rounded p-3 mb-4 batch-entry-row">
+                            <div class="form-check mb-2"><input class="form-check-input batch-row-select" type="checkbox" aria-label="Select {{ order.sample.case_code }}"></div>
+                            <div class="mb-3">
+                                <strong class="text-primary fs-5">{{ order.sample.case_code }}</strong>
+                                <div class="small text-muted">{{ order.sample.get_sample_type_full_display }}{% if order.doc_subtype %}<br><strong>Result for:</strong> {{ order.get_doc_subtype_display }}{% endif %}</div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold" for="culture_{{ order.pk }}_growth">Growth</label>
+                                    <select name="culture_{{ order.pk }}_growth" id="culture_{{ order.pk }}_growth" class="form-select" data-bulk-field="growth">
+                                        <option value="">Select growth result</option>
+                                        <option value="NO_GROWTH">No Growth</option>
+                                        <option value="GROWTH">Growth</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label fw-bold" for="culture_{{ order.pk }}_organism_name">Organism identified</label>
+                                    <input type="text" name="culture_{{ order.pk }}_organism_name" id="culture_{{ order.pk }}_organism_name" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="culture_{{ order.pk }}_colony_description">Colony description</label>
+                                    <textarea name="culture_{{ order.pk }}_colony_description" id="culture_{{ order.pk }}_colony_description" class="form-control" rows="3"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="culture_{{ order.pk }}_identification_notes">Identification notes</label>
+                                    <textarea name="culture_{{ order.pk }}_identification_notes" id="culture_{{ order.pk }}_identification_notes" class="form-control" rows="3"></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label" for="culture_{{ order.pk }}_remarks">Remarks</label>
+                                    <textarea name="culture_{{ order.pk }}_remarks" id="culture_{{ order.pk }}_remarks" class="form-control" rows="2"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% elif assay.category == "COUNT" %}
+                    {% for order in orders %}
+                        <div class="border rounded p-3 mb-4 batch-entry-row">
+                            <div class="form-check mb-2"><input class="form-check-input batch-row-select" type="checkbox" aria-label="Select {{ order.sample.case_code }}"></div>
+                            <strong class="text-primary fs-5">{{ order.sample.case_code }}</strong>
+                            <div class="small text-muted mb-3">{{ order.sample.get_sample_type_full_display }}{% if order.doc_subtype %}<br><strong>Result for:</strong> {{ order.get_doc_subtype_display }}{% endif %}</div>
+                            <div class="row g-3">
+                                <div class="col-md-6"><label class="form-label" for="count_{{ order.pk }}">Count</label><input type="number" min="0" step="1" name="count_{{ order.pk }}" id="count_{{ order.pk }}" class="form-control" data-bulk-field="count"></div>
+                                <div class="col-md-6"><label class="form-label" for="count_{{ order.pk }}_unit">Unit</label><input name="count_{{ order.pk }}_unit" id="count_{{ order.pk }}_unit" class="form-control" value="CFU/ml" data-bulk-field="unit"></div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% elif assay.category == "NDHI" %}
+                    {% for order in orders %}
+                        <div class="border rounded p-3 mb-4 batch-entry-row">
+                            <div class="form-check mb-2"><input class="form-check-input batch-row-select" type="checkbox" aria-label="Select {{ order.sample.case_code }}"></div>
+                            <strong class="text-primary fs-5">{{ order.sample.case_code }}</strong>
+                            <div class="small text-muted mb-3">{{ order.sample.get_sample_type_full_display }}{% if order.doc_subtype %}<br><strong>Result for:</strong> {{ order.get_doc_subtype_display }}{% endif %}</div>
+                            <label class="form-label fw-bold" for="ndhi_{{ order.pk }}">NDHI result</label>
+                            <textarea name="ndhi_{{ order.pk }}" id="ndhi_{{ order.pk }}" class="form-control" rows="3" data-bulk-field="result"></textarea>
+                            <label class="form-label mt-2" for="ndhi_{{ order.pk }}_remarks">Remarks</label>
+                            <textarea name="ndhi_{{ order.pk }}_remarks" id="ndhi_{{ order.pk }}_remarks" class="form-control" rows="2"></textarea>
+                        </div>
+                    {% endfor %}
+                {% elif assay.category == "PCR" %}
+                    {% for order in orders %}
+                        <div class="border rounded p-3 mb-4 batch-entry-row">
+                            <div class="form-check mb-2"><input class="form-check-input batch-row-select" type="checkbox" aria-label="Select {{ order.sample.case_code }}"></div>
+                            <strong class="text-primary fs-5">{{ order.sample.case_code }}</strong>
+                            <div class="small text-muted mb-3">{{ order.sample.get_sample_type_full_display }}{% if order.doc_subtype %}<br><strong>Result for:</strong> {{ order.get_doc_subtype_display }}{% endif %}</div>
+                            <div class="row g-3">
+                                <div class="col-md-4"><label class="form-label" for="pcr_{{ order.pk }}_target">Target</label><input name="pcr_{{ order.pk }}_target" id="pcr_{{ order.pk }}_target" class="form-control" data-bulk-field="target"></div>
+                                <div class="col-md-4"><label class="form-label" for="pcr_{{ order.pk }}_result">Result</label><input name="pcr_{{ order.pk }}_result" id="pcr_{{ order.pk }}_result" class="form-control" data-bulk-field="result"></div>
+                                <div class="col-md-4"><label class="form-label" for="pcr_{{ order.pk }}_cq_ct">Cq / Ct</label><input type="number" step="0.01" name="pcr_{{ order.pk }}_cq_ct" id="pcr_{{ order.pk }}_cq_ct" class="form-control"></div>
+                                <div class="col-md-6"><label class="form-label" for="pcr_{{ order.pk }}_interpretation">Interpretation</label><input name="pcr_{{ order.pk }}_interpretation" id="pcr_{{ order.pk }}_interpretation" class="form-control" data-bulk-field="interpretation"></div>
+                                <div class="col-md-6"><label class="form-label" for="pcr_{{ order.pk }}_remarks">Remarks</label><input name="pcr_{{ order.pk }}_remarks" id="pcr_{{ order.pk }}_remarks" class="form-control"></div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                <!-- ================================================= -->
+                <!-- OTHER ASSAYS -->
+                <!-- ================================================= -->
+
+                {% else %}
+
+                    <div class="alert alert-secondary mb-0">
+
+                        Bulk entry for
+
+                        <strong>
+                            {{ assay.get_category_display }}
+                        </strong>
+
+                        will be implemented separately.
+
+                    </div>
+
+                {% endif %}
+
+
+                <!-- ================================================= -->
+                <!-- SAVE BUTTON -->
+                <!-- ================================================= -->
+
+                {% if assay.category == "BINARY" or assay.category == "AST" or assay.category == "GRAM" or assay.category == "TSI" or assay.category == "CULTURE" or assay.category == "NDHI" or assay.category == "PCR" or assay.category == "COUNT" %}
+
+                    <div class="d-flex justify-content-end mt-4">
 
                         <button
                             type="submit"
@@ -267,40 +782,84 @@
 
                     </div>
 
-
-                {% else %}
-
-                    <div class="text-center py-5">
-
-                        <i class="fas fa-check-circle
-                                  fa-3x
-                                  text-success
-                                  mb-3"></i>
-
-                        <h5 class="fw-bold">
-
-                            No Pending Results
-
-                        </h5>
-
-                        <p class="text-muted mb-0">
-
-                            All {{ assay.name }} results
-                            have been completed.
-
-                        </p>
-
-                    </div>
-
                 {% endif %}
 
 
-            </div>
+            {% else %}
+
+                <div class="text-center py-5">
+
+                    <i class="fas fa-check-circle
+                              fa-3x
+                              text-success
+                              mb-3"></i>
+
+                    <h5 class="fw-bold">
+                        No Pending Results
+                    </h5>
+
+                    <p class="text-muted mb-0">
+
+                        All {{ assay.name }} results
+                        have been completed.
+
+                    </p>
+
+                </div>
+
+            {% endif %}
 
         </div>
 
-    </form>
+    </div>
 
-</div>
+</form>
 
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(() => {
+    const form = document.getElementById("batch-result-form");
+    const selectAll = document.getElementById("select-all-pending");
+    const rows = Array.from(form?.querySelectorAll(".batch-entry-row") || []);
+    const rowChecks = () => rows.map(row => row.querySelector(".batch-row-select")).filter(Boolean);
+
+    selectAll?.addEventListener("change", () => {
+        rowChecks().forEach(check => { check.checked = selectAll.checked; });
+    });
+    rowChecks().forEach(check => check.addEventListener("change", () => {
+        const checks = rowChecks();
+        const selected = checks.filter(item => item.checked).length;
+        if (selectAll) {
+            selectAll.checked = selected === checks.length;
+            selectAll.indeterminate = selected > 0 && selected < checks.length;
+        }
+    }));
+
+    document.querySelectorAll("[data-bulk-apply]").forEach(button => {
+        button.addEventListener("click", () => {
+            const field = document.getElementById("bulk-field")?.value;
+            const value = document.getElementById("bulk-choice")?.value
+                || document.getElementById("bulk-value")?.value
+                || document.getElementById("bulk-text")?.value;
+            if (!field || !value) return;
+
+            const applyToSelected = button.dataset.bulkApply === "selected";
+            rows.forEach(row => {
+                const selected = row.querySelector(".batch-row-select")?.checked || false;
+                if (selected !== applyToSelected) return;
+                row.querySelectorAll("[data-bulk-field]").forEach(target => {
+                    if (target.dataset.bulkField !== field) return;
+                    if (target.type === "radio") target.checked = target.value === value;
+                    else target.value = value;
+                    target.dispatchEvent(new Event("input", { bubbles: true }));
+                    target.dispatchEvent(new Event("change", { bubbles: true }));
+                });
+            });
+        });
+    });
+})();
+</script>
 {% endblock %}

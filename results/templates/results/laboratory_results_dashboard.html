@@ -9,118 +9,60 @@ Laboratory Results
 <div class="container-fluid">
 
 
-<!-- Page Header -->
+<!-- ========================================================= -->
+<!-- PAGE HEADER -->
+<!-- ========================================================= -->
+
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
 
     <div>
+
         <h2 class="fw-bold mb-1">
             Laboratory Results
         </h2>
 
         <p class="text-muted mb-0">
-            Manage pending laboratory assay results.
+            Manage laboratory assay results.
         </p>
-    </div>
-
-    <div class="mt-3 mt-md-0">
-
-        <span class="badge text-bg-warning fs-6">
-            {{ total_pending }} Pending
-        </span>
 
     </div>
 
 </div>
 
 
-<!-- Laboratory Sections -->
+<!-- ========================================================= -->
+<!-- OVERALL SUMMARY -->
+<!-- ========================================================= -->
 
-{% if grouped_results %}
+<div class="row g-4 mb-4">
 
-    {% for section, assays in grouped_results.items %}
+    <!-- Pending -->
 
-        <div class="card border-0 shadow-sm mb-4">
+    <div class="col-md-6">
 
-            <!-- Laboratory Header -->
-            <div class="card-header bg-white border-bottom">
+        <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body">
 
                 <div class="d-flex justify-content-between align-items-center">
 
                     <div>
 
-                        <h5 class="fw-bold mb-1">
-                            {{ section }}
-                        </h5>
-
-                        <small class="text-muted">
-                            Pending assays
+                        <small class="text-muted d-block">
+                            Total Pending
                         </small>
+
+                        <h3 class="fw-bold mb-0 text-warning">
+                            {{ total_pending }}
+                        </h3>
 
                     </div>
 
-                    <span class="badge text-bg-warning">
-                        {{ assays|length }} assay{{ assays|length|pluralize }}
-                    </span>
+                    <div class="text-warning">
 
-                </div>
+                        <i class="fas fa-hourglass-half fa-2x"></i>
 
-            </div>
-
-
-            <!-- Assays -->
-            <div class="card-body">
-
-                <div class="row g-3">
-
-                    {% for item in assays %}
-
-                        <div class="col-md-6 col-xl-4">
-
-                            <a href="{% url 'pending_results' laboratory=section %}"
-                               class="text-decoration-none">
-
-                                <div class="card h-100 border shadow-sm">
-
-                                    <div class="card-body">
-
-                                        <div class="d-flex justify-content-between align-items-start">
-
-                                            <div>
-
-                                                <h6 class="fw-bold text-dark mb-1">
-                                                    {{ item.assay.name }}
-                                                </h6>
-
-                                                <small class="text-muted">
-                                                    {{ item.assay.get_category_display }}
-                                                </small>
-
-                                            </div>
-
-                                            <span class="badge text-bg-warning">
-                                                {{ item.count }} Pending
-                                            </span>
-
-                                        </div>
-
-                                        <div class="mt-3">
-
-                                            <span class="text-primary small">
-                                                View pending results
-                                                <i class="fas fa-arrow-right ms-1"></i>
-                                            </span>
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                            </a>
-
-                        </div>
-
-                    {% endfor %}
+                    </div>
 
                 </div>
 
@@ -128,24 +70,230 @@ Laboratory Results
 
         </div>
 
-    {% endfor %}
+    </div>
+
+
+    <!-- Completed -->
+
+    <div class="col-md-6">
+
+        <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <div>
+
+                        <small class="text-muted d-block">
+                            Total Completed
+                        </small>
+
+                        <h3 class="fw-bold mb-0 text-success">
+                            {{ total_completed }}
+                        </h3>
+
+                    </div>
+
+                    <div class="text-success">
+
+                        <i class="fas fa-check-circle fa-2x"></i>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- LABORATORY SECTIONS -->
+<!-- ========================================================= -->
+
+{% if laboratories %}
+
+    <div class="row g-4">
+
+        {% for key, laboratory in laboratories.items %}
+
+            <div class="col-12">
+
+                <div class="card border-0 shadow-sm">
+
+                    <!-- Laboratory Header -->
+
+                    <div class="card-header bg-white border-bottom">
+
+                        <h5 class="fw-bold mb-0">
+
+                            <i class="fas fa-flask me-2 text-primary"></i>
+
+                            {{ laboratory.display }}
+
+                        </h5>
+
+                    </div>
+
+
+                    <div class="card-body">
+
+                        <div class="row g-4">
+
+                            <!-- ================================================= -->
+                            <!-- PENDING -->
+                            <!-- ================================================= -->
+
+                            <div class="col-md-6">
+
+                                <div class="card border-warning h-100">
+
+                                    <div class="card-body">
+
+                                        <div class="d-flex justify-content-between align-items-start">
+
+                                            <div>
+
+                                                <h6 class="fw-bold mb-1">
+                                                    Pending assays
+                                                </h6>
+
+                                                <p class="text-muted mb-3">
+                                                    Results waiting to be recorded.
+                                                </p>
+
+                                            </div>
+
+                                            <span class="badge text-bg-warning fs-6">
+
+                                                {{ laboratory.pending_count }}
+
+                                            </span>
+
+                                        </div>
+
+
+                                        {% if laboratory.pending_count > 0 %}
+
+                                            <a href="{% url 'pending_results' laboratory=key %}"
+                                               class="btn btn-warning">
+
+                                                <i class="fas fa-list-check me-1"></i>
+
+                                                View Pending Results
+
+                                            </a>
+
+                                        {% else %}
+
+                                            <span class="text-muted">
+                                                No pending results.
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ================================================= -->
+                            <!-- COMPLETED -->
+                            <!-- ================================================= -->
+
+                            <div class="col-md-6">
+
+                                <div class="card border-success h-100">
+
+                                    <div class="card-body">
+
+                                        <div class="d-flex justify-content-between align-items-start">
+
+                                            <div>
+
+                                                <h6 class="fw-bold mb-1">
+                                                    Completed assays
+                                                </h6>
+
+                                                <p class="text-muted mb-3">
+                                                    View completed laboratory results.
+                                                </p>
+
+                                            </div>
+
+                                            <span class="badge text-bg-success fs-6">
+
+                                                {{ laboratory.completed_count }}
+
+                                            </span>
+
+                                        </div>
+
+
+                                        {% if laboratory.completed_count > 0 %}
+
+                                            <a href="{% url 'completed_results' laboratory=key %}"
+                                               class="btn btn-success">
+
+                                                <i class="fas fa-check-circle me-1"></i>
+
+                                                View Completed Results
+
+                                            </a>
+
+                                        {% else %}
+
+                                            <span class="text-muted">
+                                                No completed results.
+                                            </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
 
 {% else %}
 
-    <!-- No Pending Results -->
+    <!-- ===================================================== -->
+    <!-- NO RESULTS -->
+    <!-- ===================================================== -->
 
     <div class="card border-0 shadow-sm">
 
         <div class="card-body text-center py-5">
 
-            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+            <i class="fas fa-flask fa-3x text-muted mb-3"></i>
 
             <h5 class="fw-bold">
-                No Pending Results
+                No Laboratory Results
             </h5>
 
             <p class="text-muted mb-0">
-                There are currently no pending laboratory results.
+                There are currently no laboratory assay results
+                to display.
             </p>
 
         </div>
